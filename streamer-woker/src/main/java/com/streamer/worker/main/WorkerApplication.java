@@ -96,7 +96,7 @@ public class WorkerApplication implements EmbeddedServletContainerCustomizer, Ap
 			port = Integer.valueOf(_port);
 		}
 
-		logger.info("The ksql system set port as {}", port);
+		logger.info("The streamer system set port as {}", port);
 		current.setPort(port);
 
 		String host = environment.getProperty("http-server.http.host");
@@ -120,7 +120,7 @@ public class WorkerApplication implements EmbeddedServletContainerCustomizer, Ap
 				node = UUID.randomUUID().toString() + "-" + current.getPort();
 			}
 		}
-		logger.info("The ksql system set node as {}", node);
+		logger.info("The streamer system set node as {}", node);
 		current.setNode(node);
 
 		return current;
