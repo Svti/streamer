@@ -13,7 +13,7 @@
 		<dependency>
 			<groupId>com.streamer</groupId>
 			<artifactId>streamer-service</artifactId>
-			<version>${parent.version}</version>
+			<version>${project.parent.version}</version>
 		</dependency>
 
 		<dependency>
