@@ -9,11 +9,11 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import com.streamer.core.support.Signal;
-import com.streamer.service.context.AppService;
 import com.streamer.service.core.StreamerRole;
 import com.streamer.service.view.PaginationResult;
 
@@ -22,6 +22,9 @@ public class AppServiceImpl implements AppService {
 
 	@Resource
 	private JdbcTemplate jdbcTemplate;
+
+	@Resource
+	private Environment environment;
 
 	@Override
 	public int save(String node, String name, String sql, Date now) {
@@ -192,6 +195,17 @@ public class AppServiceImpl implements AppService {
 	@Override
 	public List<Map<String, Object>> findJobsByNode(String node, int status) {
 		return jdbcTemplate.queryForList("SELECT * FROM jobs WHERE node =? AND status = ? ", node, status);
+	}
+
+	@Override
+	public boolean login(String username, String password) {
+		String default_username = environment.getProperty("application.admin.username");
+		String default_password = environment.getProperty("application.admin.password");
+		if (username.equals(default_username) && password.equals(default_password)) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 }

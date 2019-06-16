@@ -41,4 +41,6 @@ public interface AppService {
 
 	public List<Map<String, Object>> findJobsByNode(String node, int status);
 
+	public boolean login(String username, String password);
+
 }

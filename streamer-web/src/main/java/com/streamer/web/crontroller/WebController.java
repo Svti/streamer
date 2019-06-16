@@ -49,7 +49,7 @@ public class WebController {
 			return "web/login";
 		}
 
-		if (username.equals("admin") && password.equals("akfak")) {
+		if (appService.login(username, password)) {
 			session.setAttribute("user", username);
 			return "redirect:index";
 		} else {
@@ -76,11 +76,11 @@ public class WebController {
 		request.setAttribute("node", node);
 
 		// 第N行
-		long line = 50;
+		long line = WebConstant.LOG_LINE;
 		if (StringUtils.isNotEmpty(request.getParameter("line"))) {
 			line = Long.parseLong(request.getParameter("line"));
-			if (line < 50) {
-				line = 50;
+			if (line < WebConstant.LOG_LINE) {
+				line = WebConstant.LOG_LINE;
 			}
 		}
 		request.setAttribute("line", line);

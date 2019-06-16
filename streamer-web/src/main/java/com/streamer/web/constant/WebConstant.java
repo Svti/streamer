@@ -17,4 +17,6 @@ public class WebConstant {
 	public static final String NULL_JOB = "_";
 
 	public static final int TIMEOUT = 3;
+
+	public static final long LOG_LINE = 100;
 }
