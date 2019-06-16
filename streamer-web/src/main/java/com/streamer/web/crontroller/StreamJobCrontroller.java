@@ -20,8 +20,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.streamer.core.parser.SqlParser;
 import com.streamer.service.context.AppService;
+import com.streamer.service.core.StreamerConstant;
 import com.streamer.service.view.PaginationView;
-import com.streamer.web.constant.WebConstant;
 import com.streamer.web.rpc.RpcService;
 
 @Controller
@@ -64,16 +64,16 @@ public class StreamJobCrontroller {
 			request.setAttribute("sql", sql);
 		}
 
-		PaginationView<Map<String, Object>> pv = new PaginationView<Map<String, Object>>(WebConstant.PAGE_SIZE,
+		PaginationView<Map<String, Object>> pv = new PaginationView<Map<String, Object>>(StreamerConstant.PAGE_SIZE,
 				currentPage);
-		pv.setPaginationResult(appService.findAll(name, node, sql, currentPage, WebConstant.PAGE_SIZE));
-		request.setAttribute(WebConstant.PAGEVIEW, pv);
+		pv.setPaginationResult(appService.findAll(name, node, sql, currentPage, StreamerConstant.PAGE_SIZE));
+		request.setAttribute(StreamerConstant.PAGEVIEW, pv);
 		return "job/index";
 	}
 
 	@RequestMapping("/add")
 	public String job_add(HttpServletRequest request) {
-		request.setAttribute("nodes", appService.findAlivableNode(WebConstant.TIMEOUT));
+		request.setAttribute("nodes", appService.findAlivableNode(StreamerConstant.TIMEOUT));
 		return "job/add";
 	}
 
@@ -82,7 +82,7 @@ public class StreamJobCrontroller {
 		List<Map<String, Object>> list = appService.findJobByName(name);
 
 		// 放入可用节点
-		request.setAttribute("nodes", appService.findAlivableNode(WebConstant.TIMEOUT));
+		request.setAttribute("nodes", appService.findAlivableNode(StreamerConstant.TIMEOUT));
 
 		if (list.isEmpty()) {
 			return "job/add";
@@ -97,7 +97,7 @@ public class StreamJobCrontroller {
 		List<Map<String, Object>> list = appService.findJobByName(name);
 
 		// 放入可用节点
-		request.setAttribute("nodes", appService.findAlivableNode(WebConstant.TIMEOUT));
+		request.setAttribute("nodes", appService.findAlivableNode(StreamerConstant.TIMEOUT));
 
 		if (list.isEmpty()) {
 			return "job/add";
@@ -118,17 +118,17 @@ public class StreamJobCrontroller {
 			Map<String, Object> map = list.get(0);
 			int status = Integer.valueOf(map.get("status").toString());
 			if (status > 0) {
-				request.setAttribute(WebConstant.STATUS, WebConstant.ERROR);
-				request.setAttribute(WebConstant.MESSAGE, "任务" + name + "正在运行中，不能删除。");
+				request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+				request.setAttribute(StreamerConstant.MESSAGE, "任务" + name + "正在运行中，不能删除。");
 
 				int currentPage = 1;
 				if (StringUtils.isNotEmpty(request.getParameter("pageNo"))) {
 					currentPage = Integer.parseInt(request.getParameter("pageNo"));
 				}
-				PaginationView<Map<String, Object>> pv = new PaginationView<Map<String, Object>>(WebConstant.PAGE_SIZE,
-						currentPage);
-				pv.setPaginationResult(appService.findAll(null, null, null, currentPage, WebConstant.PAGE_SIZE));
-				request.setAttribute(WebConstant.PAGEVIEW, pv);
+				PaginationView<Map<String, Object>> pv = new PaginationView<Map<String, Object>>(
+						StreamerConstant.PAGE_SIZE, currentPage);
+				pv.setPaginationResult(appService.findAll(null, null, null, currentPage, StreamerConstant.PAGE_SIZE));
+				request.setAttribute(StreamerConstant.PAGEVIEW, pv);
 
 				return "job/index";
 			} else {
@@ -146,14 +146,14 @@ public class StreamJobCrontroller {
 		String node = request.getParameter("node");
 
 		if (com.mysql.jdbc.StringUtils.isEmptyOrWhitespaceOnly(queryName)) {
-			request.setAttribute(WebConstant.STATUS, WebConstant.ERROR);
-			request.setAttribute(WebConstant.MESSAGE, "任务名不能为空");
+			request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+			request.setAttribute(StreamerConstant.MESSAGE, "任务名不能为空");
 			return "job/add";
 		}
 
 		if (com.mysql.jdbc.StringUtils.isEmptyOrWhitespaceOnly(node)) {
-			request.setAttribute(WebConstant.STATUS, WebConstant.ERROR);
-			request.setAttribute(WebConstant.MESSAGE, "请选择执行节点");
+			request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+			request.setAttribute(StreamerConstant.MESSAGE, "请选择执行节点");
 			job_edit(request, queryName);
 			return "job/add";
 		}
@@ -161,22 +161,22 @@ public class StreamJobCrontroller {
 		Matcher matcher = Pattern.compile("^\\w+$").matcher(queryName);
 
 		if (!matcher.matches()) {
-			request.setAttribute(WebConstant.STATUS, WebConstant.ERROR);
-			request.setAttribute(WebConstant.MESSAGE, "任务名只能为数字和字母");
+			request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+			request.setAttribute(StreamerConstant.MESSAGE, "任务名只能为数字和字母");
 			job_edit(request, queryName);
 			return "job/add";
 		}
 
 		if (StringUtils.length(queryName) < 3) {
-			request.setAttribute(WebConstant.STATUS, WebConstant.ERROR);
-			request.setAttribute(WebConstant.MESSAGE, "任务名必须大于3个字符");
+			request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+			request.setAttribute(StreamerConstant.MESSAGE, "任务名必须大于3个字符");
 			job_edit(request, queryName);
 			return "job/add";
 		}
 
 		if (com.mysql.jdbc.StringUtils.isEmptyOrWhitespaceOnly(sql)) {
-			request.setAttribute(WebConstant.STATUS, WebConstant.ERROR);
-			request.setAttribute(WebConstant.MESSAGE, "配置SQL不能为空");
+			request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+			request.setAttribute(StreamerConstant.MESSAGE, "配置SQL不能为空");
 			job_edit(request, queryName);
 			return "job/add";
 		}
@@ -188,25 +188,25 @@ public class StreamJobCrontroller {
 			try {
 				SqlParser.parseSql(queryName, sql);
 				appService.update(node, queryName, sql);
-				request.setAttribute(WebConstant.STATUS, WebConstant.SUCCESS);
-				request.setAttribute(WebConstant.MESSAGE, "任务" + queryName + "修改成功");
+				request.setAttribute(StreamerConstant.STATUS, StreamerConstant.SUCCESS);
+				request.setAttribute(StreamerConstant.MESSAGE, "任务" + queryName + "修改成功");
 
 				// 分页
 				int currentPage = 1;
 				if (StringUtils.isNotEmpty(request.getParameter("pageNo"))) {
 					currentPage = Integer.parseInt(request.getParameter("pageNo"));
 				}
-				PaginationView<Map<String, Object>> pv = new PaginationView<Map<String, Object>>(WebConstant.PAGE_SIZE,
-						currentPage);
-				pv.setPaginationResult(appService.findAll(null, null, null, currentPage, WebConstant.PAGE_SIZE));
-				request.setAttribute(WebConstant.PAGEVIEW, pv);
+				PaginationView<Map<String, Object>> pv = new PaginationView<Map<String, Object>>(
+						StreamerConstant.PAGE_SIZE, currentPage);
+				pv.setPaginationResult(appService.findAll(null, null, null, currentPage, StreamerConstant.PAGE_SIZE));
+				request.setAttribute(StreamerConstant.PAGEVIEW, pv);
 
 				return "job/index";
 
 			} catch (Exception e) {
 				logger.error(e.getMessage(), e);
-				request.setAttribute(WebConstant.STATUS, WebConstant.ERROR);
-				request.setAttribute(WebConstant.MESSAGE, ExceptionUtils.getFullStackTrace(e));
+				request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+				request.setAttribute(StreamerConstant.MESSAGE, ExceptionUtils.getFullStackTrace(e));
 				job_edit(request, queryName);
 				return "job/add";
 			}
@@ -215,23 +215,23 @@ public class StreamJobCrontroller {
 			try {
 				SqlParser.parseSql(queryName, sql);
 				appService.save(node, queryName, sql, DateTime.now().toDate());
-				request.setAttribute(WebConstant.STATUS, WebConstant.SUCCESS);
-				request.setAttribute(WebConstant.MESSAGE, "任务" + queryName + "保存成功");
+				request.setAttribute(StreamerConstant.STATUS, StreamerConstant.SUCCESS);
+				request.setAttribute(StreamerConstant.MESSAGE, "任务" + queryName + "保存成功");
 
 				// 分页
 				int currentPage = 1;
 				if (StringUtils.isNotEmpty(request.getParameter("pageNo"))) {
 					currentPage = Integer.parseInt(request.getParameter("pageNo"));
 				}
-				PaginationView<Map<String, Object>> pv = new PaginationView<Map<String, Object>>(WebConstant.PAGE_SIZE,
-						currentPage);
-				pv.setPaginationResult(appService.findAll(null, null, null, currentPage, WebConstant.PAGE_SIZE));
-				request.setAttribute(WebConstant.PAGEVIEW, pv);
+				PaginationView<Map<String, Object>> pv = new PaginationView<Map<String, Object>>(
+						StreamerConstant.PAGE_SIZE, currentPage);
+				pv.setPaginationResult(appService.findAll(null, null, null, currentPage, StreamerConstant.PAGE_SIZE));
+				request.setAttribute(StreamerConstant.PAGEVIEW, pv);
 				return "job/index";
 
 			} catch (Exception e) {
-				request.setAttribute(WebConstant.STATUS, WebConstant.ERROR);
-				request.setAttribute(WebConstant.MESSAGE, ExceptionUtils.getFullStackTrace(e));
+				request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+				request.setAttribute(StreamerConstant.MESSAGE, ExceptionUtils.getFullStackTrace(e));
 				logger.error(e.getMessage(), e);
 				job_edit(request, queryName);
 				return "job/add";
@@ -245,8 +245,8 @@ public class StreamJobCrontroller {
 		List<Map<String, Object>> list = appService.findJobByName(name);
 
 		if (list.isEmpty()) {
-			request.setAttribute(WebConstant.STATUS, WebConstant.ERROR);
-			request.setAttribute(WebConstant.MESSAGE, "任务" + name + "不存在");
+			request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+			request.setAttribute(StreamerConstant.MESSAGE, "任务" + name + "不存在");
 		} else {
 
 			Map<String, Object> map = list.get(0);
@@ -254,8 +254,8 @@ public class StreamJobCrontroller {
 			int status = Integer.valueOf(map.get("status").toString());
 
 			if (status > 0) {
-				request.setAttribute(WebConstant.STATUS, WebConstant.ERROR);
-				request.setAttribute(WebConstant.MESSAGE, "任务" + name + "正在运行中");
+				request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+				request.setAttribute(StreamerConstant.MESSAGE, "任务" + name + "正在运行中");
 			} else {
 				try {
 					String txt = String.valueOf(map.get("sql"));
@@ -266,17 +266,17 @@ public class StreamJobCrontroller {
 					boolean flag = rpcService.run(node, name);
 
 					if (flag) {
-						request.setAttribute(WebConstant.STATUS, WebConstant.SUCCESS);
-						request.setAttribute(WebConstant.MESSAGE, "任务" + name + "启动成功");
+						request.setAttribute(StreamerConstant.STATUS, StreamerConstant.SUCCESS);
+						request.setAttribute(StreamerConstant.MESSAGE, "任务" + name + "启动成功");
 					} else {
-						request.setAttribute(WebConstant.STATUS, WebConstant.ERROR);
-						request.setAttribute(WebConstant.MESSAGE, "任务" + name + "启动失败");
+						request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+						request.setAttribute(StreamerConstant.MESSAGE, "任务" + name + "启动失败");
 					}
 
 				} catch (Exception e) {
 					logger.error(e.getMessage(), e);
-					request.setAttribute(WebConstant.STATUS, WebConstant.ERROR);
-					request.setAttribute(WebConstant.MESSAGE, ExceptionUtils.getFullStackTrace(e));
+					request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+					request.setAttribute(StreamerConstant.MESSAGE, ExceptionUtils.getFullStackTrace(e));
 				}
 			}
 		}
@@ -286,10 +286,10 @@ public class StreamJobCrontroller {
 		if (StringUtils.isNotEmpty(request.getParameter("pageNo"))) {
 			currentPage = Integer.parseInt(request.getParameter("pageNo"));
 		}
-		PaginationView<Map<String, Object>> pv = new PaginationView<Map<String, Object>>(WebConstant.PAGE_SIZE,
+		PaginationView<Map<String, Object>> pv = new PaginationView<Map<String, Object>>(StreamerConstant.PAGE_SIZE,
 				currentPage);
-		pv.setPaginationResult(appService.findAll(null, null, null, currentPage, WebConstant.PAGE_SIZE));
-		request.setAttribute(WebConstant.PAGEVIEW, pv);
+		pv.setPaginationResult(appService.findAll(null, null, null, currentPage, StreamerConstant.PAGE_SIZE));
+		request.setAttribute(StreamerConstant.PAGEVIEW, pv);
 
 		return "job/index";
 	}
@@ -301,8 +301,8 @@ public class StreamJobCrontroller {
 
 		if (list.isEmpty()) {
 
-			request.setAttribute(WebConstant.STATUS, WebConstant.ERROR);
-			request.setAttribute(WebConstant.MESSAGE, "任务" + name + "不存在");
+			request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+			request.setAttribute(StreamerConstant.MESSAGE, "任务" + name + "不存在");
 
 		} else {
 
@@ -316,21 +316,21 @@ public class StreamJobCrontroller {
 					boolean flag = rpcService.stop(node, name);
 
 					if (flag) {
-						request.setAttribute(WebConstant.STATUS, WebConstant.SUCCESS);
-						request.setAttribute(WebConstant.MESSAGE, "任务" + name + "停止成功");
+						request.setAttribute(StreamerConstant.STATUS, StreamerConstant.SUCCESS);
+						request.setAttribute(StreamerConstant.MESSAGE, "任务" + name + "停止成功");
 					} else {
-						request.setAttribute(WebConstant.STATUS, WebConstant.ERROR);
-						request.setAttribute(WebConstant.MESSAGE, "任务" + name + "停止失败");
+						request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+						request.setAttribute(StreamerConstant.MESSAGE, "任务" + name + "停止失败");
 					}
 
 				} catch (Exception e) {
 					logger.info(e.getMessage(), e);
-					request.setAttribute(WebConstant.STATUS, WebConstant.ERROR);
-					request.setAttribute(WebConstant.MESSAGE, ExceptionUtils.getFullStackTrace(e));
+					request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+					request.setAttribute(StreamerConstant.MESSAGE, ExceptionUtils.getFullStackTrace(e));
 				}
 			} else {
-				request.setAttribute(WebConstant.STATUS, WebConstant.ERROR);
-				request.setAttribute(WebConstant.MESSAGE, "任务" + name + "已经是停止状态");
+				request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+				request.setAttribute(StreamerConstant.MESSAGE, "任务" + name + "已经是停止状态");
 			}
 
 		}
@@ -340,10 +340,10 @@ public class StreamJobCrontroller {
 		if (StringUtils.isNotEmpty(request.getParameter("pageNo"))) {
 			currentPage = Integer.parseInt(request.getParameter("pageNo"));
 		}
-		PaginationView<Map<String, Object>> pv = new PaginationView<Map<String, Object>>(WebConstant.PAGE_SIZE,
+		PaginationView<Map<String, Object>> pv = new PaginationView<Map<String, Object>>(StreamerConstant.PAGE_SIZE,
 				currentPage);
-		pv.setPaginationResult(appService.findAll(null, null, null, currentPage, WebConstant.PAGE_SIZE));
-		request.setAttribute(WebConstant.PAGEVIEW, pv);
+		pv.setPaginationResult(appService.findAll(null, null, null, currentPage, StreamerConstant.PAGE_SIZE));
+		request.setAttribute(StreamerConstant.PAGEVIEW, pv);
 
 		return "job/index";
 	}
@@ -371,8 +371,8 @@ public class StreamJobCrontroller {
 			} else {
 				List<Map<String, Object>> list = appService.findJobByName(name);
 				if (list.isEmpty()) {
-					request.setAttribute(WebConstant.STATUS, WebConstant.ERROR);
-					request.setAttribute(WebConstant.MESSAGE, "任务" + name + "不存在");
+					request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+					request.setAttribute(StreamerConstant.MESSAGE, "任务" + name + "不存在");
 					request.setAttribute("log", "");
 				} else {
 					String log = rpcService.log(node, name, line);
@@ -382,8 +382,8 @@ public class StreamJobCrontroller {
 		} catch (IOException e) {
 			request.setAttribute("log", "");
 			logger.info(e.getMessage(), e);
-			request.setAttribute(WebConstant.STATUS, WebConstant.ERROR);
-			request.setAttribute(WebConstant.MESSAGE, ExceptionUtils.getFullStackTrace(e));
+			request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+			request.setAttribute(StreamerConstant.MESSAGE, ExceptionUtils.getFullStackTrace(e));
 		}
 		return "job/log";
 	}

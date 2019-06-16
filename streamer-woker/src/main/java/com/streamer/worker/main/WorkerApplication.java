@@ -25,9 +25,9 @@ import org.springframework.core.env.Environment;
 import com.mysql.jdbc.StringUtils;
 import com.streamer.core.exception.StreammerException;
 import com.streamer.service.context.AppService;
+import com.streamer.service.core.StreamerConstant;
 import com.streamer.service.core.StreamerEnvironment;
 import com.streamer.service.core.StreamerRole;
-import com.streamer.worker.constant.Constant;
 import com.streamer.worker.utils.WebUtils;
 
 @SpringBootApplication
@@ -62,15 +62,15 @@ public class WorkerApplication implements EmbeddedServletContainerCustomizer, Ap
 		appService.stopAll(node);
 
 		// 判断是否有主节点
-		Map<String, Object> map = appService.findMasterNode(Constant.TIMEOUT);
+		Map<String, Object> map = appService.findMasterNode(StreamerConstant.TIMEOUT);
 
 		do {
-			map = appService.findMasterNode(Constant.TIMEOUT);
+			map = appService.findMasterNode(StreamerConstant.TIMEOUT);
 			if (map == null) {
 				try {
 					logger.error("The are not found master in this cluster , please check it and config it. After "
-							+ Constant.TIMEOUT + " seconds and try...");
-					Thread.sleep(Constant.TIMEOUT * 1000);
+							+ StreamerConstant.TIMEOUT + " seconds and try...");
+					Thread.sleep(StreamerConstant.TIMEOUT * 1000);
 				} catch (InterruptedException e) {
 				}
 			} else {

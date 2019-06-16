@@ -14,8 +14,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import com.streamer.service.context.AppService;
+import com.streamer.service.core.StreamerConstant;
 import com.streamer.service.core.StreamerRole;
-import com.streamer.web.constant.WebConstant;
 
 @Configuration
 @EnableScheduling
@@ -29,16 +29,16 @@ public class Watcher {
 	@Resource
 	private Environment environment;
 
-	@Scheduled(fixedRate = WebConstant.TIMEOUT * 1000)
+	@Scheduled(fixedRate = StreamerConstant.TIMEOUT * 1000)
 	public void online() {
 		// 在线监听
-		appService.online(WebConstant.MASTER_NAME, WebConstant.MASTER_HOST,
+		appService.online(StreamerConstant.MASTER_NAME, StreamerConstant.MASTER_HOST,
 				Integer.valueOf(environment.getProperty("server.port")), StreamerRole.MASTER, new Date());
 
-		List<String> nodes = appService.expireNodes(WebConstant.TIMEOUT * 3);
+		List<String> nodes = appService.expireNodes(StreamerConstant.TIMEOUT * 3);
 
 		for (String enode : nodes) {
-			for (Map<String, Object> map : appService.findJobsByNode(enode, WebConstant.RUNNING)) {
+			for (Map<String, Object> map : appService.findJobsByNode(enode, StreamerConstant.RUNNING_JOB)) {
 				String name = String.valueOf(map.get("name"));
 				try {
 					appService.stop(String.valueOf(map.get("token")), enode, name);

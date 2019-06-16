@@ -27,10 +27,9 @@ import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
 import org.springframework.web.servlet.view.freemarker.FreeMarkerViewResolver;
 
 import com.streamer.service.context.AppService;
-import com.streamer.service.core.ServiceConstant;
+import com.streamer.service.core.StreamerConstant;
 import com.streamer.service.core.StreamerRole;
 import com.streamer.web.aop.SessionInterceptor;
-import com.streamer.web.constant.WebConstant;
 
 import okhttp3.OkHttpClient;
 
@@ -95,11 +94,11 @@ public class StreamerApplication extends WebMvcConfigurerAdapter implements Appl
 	@Override
 	public void setApplicationContext(ApplicationContext context) throws BeansException {
 		AppService appService = context.getBean(AppService.class);
-		Map<String, Object> map = appService.findMasterNode(WebConstant.TIMEOUT);
+		Map<String, Object> map = appService.findMasterNode(StreamerConstant.TIMEOUT);
 		do {
-			appService.online(WebConstant.MASTER_NAME, WebConstant.MASTER_HOST,
+			appService.online(StreamerConstant.MASTER_NAME, StreamerConstant.MASTER_HOST,
 					Integer.valueOf(environment.getProperty("server.port")), StreamerRole.MASTER, new Date());
-			map = appService.findMasterNode(WebConstant.TIMEOUT);
+			map = appService.findMasterNode(StreamerConstant.TIMEOUT);
 		} while (map == null);
 	}
 
@@ -109,11 +108,11 @@ public class StreamerApplication extends WebMvcConfigurerAdapter implements Appl
 		dataSource.setUrl(environment.getProperty("spring.datasource.url"));
 		dataSource.setUsername(environment.getProperty("spring.datasource.username"));
 		dataSource.setPassword(environment.getProperty("spring.datasource.password"));
-		dataSource.setInitialSize(ServiceConstant.INIT_SIZE);
-		dataSource.setMaxTotal(ServiceConstant.CONN_SIZE);
-		dataSource.setMaxOpenPreparedStatements(ServiceConstant.CONN_SIZE);
+		dataSource.setInitialSize(StreamerConstant.INIT_SIZE);
+		dataSource.setMaxTotal(StreamerConstant.CONN_SIZE);
+		dataSource.setMaxOpenPreparedStatements(StreamerConstant.CONN_SIZE);
 		dataSource.setValidationQuery("SELECT 1");
-		dataSource.setValidationQueryTimeout(ServiceConstant.VALIDATE_TIME);
+		dataSource.setValidationQueryTimeout(StreamerConstant.VALIDATE_TIME);
 		JdbcTemplate jdbcTemplate = new JdbcTemplate();
 		jdbcTemplate.setDataSource(dataSource);
 		return jdbcTemplate;

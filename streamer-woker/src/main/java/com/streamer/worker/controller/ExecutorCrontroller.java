@@ -24,7 +24,7 @@ import com.streamer.core.parser.SqlParser;
 import com.streamer.core.parser.SqlTree;
 import com.streamer.service.broker.KafkaStreamBroker;
 import com.streamer.service.context.AppService;
-import com.streamer.service.core.ServiceConstant;
+import com.streamer.service.core.StreamerConstant;
 import com.streamer.service.core.StreamerEnvironment;
 import com.streamer.service.job.KafkaStreamJob;
 import com.streamer.worker.http.ApiResponse;
@@ -93,7 +93,7 @@ public class ExecutorCrontroller {
 
 		try {
 			SqlTree sqlTree = SqlParser.parseSql(name, String.valueOf(list.get(0).get("sql")));
-			logger.info("Start job " + ServiceConstant.FORMAT_JOB_NAME(name) + " use token : {} ", token);
+			logger.info("Start job " + StreamerConstant.FORMAT_JOB_NAME(name) + " use token : {} ", token);
 			appService.start(streamerEnvironment.getNode(), name, token);
 
 			// 初始化线程池
@@ -108,7 +108,7 @@ public class ExecutorCrontroller {
 
 		} catch (Exception e) {
 			appService.stop(token, streamerEnvironment.getNode(), name);
-			logger.error(ServiceConstant.FORMAT_JOB_NAME(name) + e.getMessage(), e);
+			logger.error(StreamerConstant.FORMAT_JOB_NAME(name) + e.getMessage(), e);
 			response.setData(HttpStatus.INTERNAL_SERVER_ERROR.name());
 			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 			hresponse.setStatus(HttpStatus.BAD_REQUEST.value());
@@ -142,12 +142,12 @@ public class ExecutorCrontroller {
 
 		try {
 			String token = String.valueOf(list.get(0).get("token"));
-			logger.info("Kill " + ServiceConstant.FORMAT_JOB_NAME(name) + " use token : {} ", token);
+			logger.info("Kill " + StreamerConstant.FORMAT_JOB_NAME(name) + " use token : {} ", token);
 			appService.stop(token, node, name);
 			return response;
 
 		} catch (Exception e) {
-			logger.error(ServiceConstant.FORMAT_JOB_NAME(name) + e.getMessage(), e);
+			logger.error(StreamerConstant.FORMAT_JOB_NAME(name) + e.getMessage(), e);
 			response.setData(HttpStatus.INTERNAL_SERVER_ERROR.name());
 			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 			hresponse.setStatus(HttpStatus.BAD_REQUEST.value());
@@ -182,7 +182,7 @@ public class ExecutorCrontroller {
 				return response;
 			}
 		} catch (Exception e) {
-			logger.error(ServiceConstant.FORMAT_JOB_NAME(name) + e.getMessage(), e);
+			logger.error(StreamerConstant.FORMAT_JOB_NAME(name) + e.getMessage(), e);
 			response.setData(HttpStatus.INTERNAL_SERVER_ERROR.name());
 			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 			hresponse.setStatus(HttpStatus.BAD_REQUEST.value());

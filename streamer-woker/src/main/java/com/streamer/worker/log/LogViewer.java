@@ -10,16 +10,16 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.streamer.service.core.ServiceConstant;
+import com.streamer.service.core.StreamerConstant;
 
 public class LogViewer {
 
 	public static String readLog(String name, long n) {
-		String job = ServiceConstant.FORMAT_JOB_NAME(name);
+		String job = StreamerConstant.FORMAT_JOB_NAME(name);
 		if (name.equals("_")) {
 			job = null;
 		}
-		File file = new File(ServiceConstant.LOG_NAME);
+		File file = new File(StreamerConstant.LOG_NAME);
 		return readLastNLine(job, file, n);
 
 	}
@@ -58,7 +58,7 @@ public class LogViewer {
 								continue;
 							}
 						}
-						if (count >= ServiceConstant.MAX_LINE || count == n) {
+						if (count >= StreamerConstant.MAX_LINE || count == n) {
 							break;
 						}
 					}

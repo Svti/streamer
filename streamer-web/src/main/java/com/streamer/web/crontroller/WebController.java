@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.streamer.service.context.AppService;
-import com.streamer.web.constant.WebConstant;
+import com.streamer.service.core.StreamerConstant;
 import com.streamer.web.rpc.RpcService;
 
 @Controller
@@ -29,7 +29,7 @@ public class WebController {
 
 	@RequestMapping(value = "/web/index")
 	public String index(HttpServletRequest request) {
-		request.setAttribute("index", appService.findTotal(WebConstant.TIMEOUT));
+		request.setAttribute("index", appService.findTotal(StreamerConstant.TIMEOUT));
 		return "web/index";
 	}
 
@@ -66,7 +66,7 @@ public class WebController {
 
 	@RequestMapping("/node/index")
 	public String node_index(HttpServletRequest request) {
-		request.setAttribute("nodes", appService.findAlivableNode(WebConstant.TIMEOUT));
+		request.setAttribute("nodes", appService.findAlivableNode(StreamerConstant.TIMEOUT));
 		return "node/index";
 	}
 
@@ -76,23 +76,23 @@ public class WebController {
 		request.setAttribute("node", node);
 
 		// 第N行
-		long line = WebConstant.LOG_LINE;
+		long line = StreamerConstant.LOG_LINE;
 		if (StringUtils.isNotEmpty(request.getParameter("line"))) {
 			line = Long.parseLong(request.getParameter("line"));
-			if (line < WebConstant.LOG_LINE) {
-				line = WebConstant.LOG_LINE;
+			if (line < StreamerConstant.LOG_LINE) {
+				line = StreamerConstant.LOG_LINE;
 			}
 		}
 		request.setAttribute("line", line);
 
 		try {
-			String log = rpcService.log(node, WebConstant.NULL_JOB, line);
+			String log = rpcService.log(node, StreamerConstant.NULL_JOB, line);
 			request.setAttribute("log", log);
 		} catch (Exception e) {
 			request.setAttribute("log", "");
 			logger.info(e.getMessage(), e);
-			request.setAttribute(WebConstant.STATUS, WebConstant.ERROR);
-			request.setAttribute(WebConstant.MESSAGE, ExceptionUtils.getFullStackTrace(e));
+			request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+			request.setAttribute(StreamerConstant.MESSAGE, ExceptionUtils.getFullStackTrace(e));
 		}
 
 		return "node/log";

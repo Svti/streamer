@@ -15,7 +15,7 @@ import com.streamer.core.parser.SqlTree;
 import com.streamer.core.parser.TableColumn;
 import com.streamer.core.support.Spliter;
 import com.streamer.core.utils.CoreUtils;
-import com.streamer.service.core.ServiceConstant;
+import com.streamer.service.core.StreamerConstant;
 
 public class KafkaStreamJob {
 
@@ -95,7 +95,7 @@ public class KafkaStreamJob {
 
 		if (sqlTree.getPreDealTableMap().size() == 0) {
 			throw new StreammerException(
-					ServiceConstant.FORMAT_JOB_NAME(name) + "The kafka source table is empty , please check it");
+					StreamerConstant.FORMAT_JOB_NAME(name) + "The kafka source table is empty , please check it");
 		}
 		if (sqlTree.getPreDealTableMap().size() > 1) {
 			throw new StreammerException("Sorry, support one source kafka table only , please check it");
@@ -123,28 +123,28 @@ public class KafkaStreamJob {
 		}
 
 		if (!sourceMap.containsKey("kafka.topic")) {
-			throw new StreammerException(ServiceConstant.FORMAT_JOB_NAME(name)
+			throw new StreammerException(StreamerConstant.FORMAT_JOB_NAME(name)
 					+ "The kafka.topic is needed in kafka source and cant be empty , Config:" + sourceMap);
 		} else {
 			this.topics = String.valueOf(sourceMap.get("kafka.topic"));
 		}
 
 		if (!sourceMap.containsKey("kafka.zkurl")) {
-			throw new StreammerException(ServiceConstant.FORMAT_JOB_NAME(name)
+			throw new StreammerException(StreamerConstant.FORMAT_JOB_NAME(name)
 					+ "The kafka.zkurl is needed in kafka source and cant be empty , Config:" + sourceMap);
 		} else {
 			this.zookeeper = String.valueOf(sourceMap.get("kafka.zkurl"));
 		}
 
 		if (!sourceMap.containsKey("kafka.group")) {
-			throw new StreammerException(ServiceConstant.FORMAT_JOB_NAME(name)
+			throw new StreammerException(StreamerConstant.FORMAT_JOB_NAME(name)
 					+ "The kafka.group is needed in kafka source and cant be empty , Config:" + sourceMap);
 		} else {
 			this.group = String.valueOf(sourceMap.get("kafka.group"));
 		}
 
 		if (!sourceMap.containsKey("kafka.reset")) {
-			throw new StreammerException(ServiceConstant.FORMAT_JOB_NAME(name)
+			throw new StreammerException(StreamerConstant.FORMAT_JOB_NAME(name)
 					+ "The kafka.reset is needed in kafka source and cant be empty , it should be 'smallest' or 'largest' , Config:"
 					+ sourceMap);
 		} else {
@@ -152,7 +152,7 @@ public class KafkaStreamJob {
 		}
 
 		if (!sourceMap.containsKey("kafka.batch")) {
-			throw new StreammerException(ServiceConstant.FORMAT_JOB_NAME(name)
+			throw new StreammerException(StreamerConstant.FORMAT_JOB_NAME(name)
 					+ "The kafka.batch is needed in kafka source and cant be empty , Config:" + sourceMap);
 		} else {
 			this.batch = Integer.valueOf(sourceMap.get("kafka.batch").toString());
@@ -168,7 +168,7 @@ public class KafkaStreamJob {
 			if (splits.length > 1) {
 				this.spliter = Spliter.spOf("kv", splits[0], splits[1]);
 			} else {
-				throw new StreammerException(ServiceConstant.FORMAT_JOB_NAME(name)
+				throw new StreammerException(StreamerConstant.FORMAT_JOB_NAME(name)
 						+ "The split is needed to be like k|v , | it is like `|=");
 			}
 		}

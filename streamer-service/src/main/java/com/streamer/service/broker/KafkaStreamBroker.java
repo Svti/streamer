@@ -24,7 +24,7 @@ import com.streamer.core.utils.CoreUtils;
 import com.streamer.fun.load.ScalarFunctionLoader;
 import com.streamer.fun.load.SideFunctionLoader;
 import com.streamer.fun.sink.StreamerSinkFactory;
-import com.streamer.service.core.ServiceConstant;
+import com.streamer.service.core.StreamerConstant;
 import com.streamer.service.job.KafkaStreamJob;
 import com.streamer.service.ops.LocalService;
 import com.streamer.service.table.KafkaMessageTable;;
@@ -119,12 +119,12 @@ public class KafkaStreamBroker extends AbstractKafkaStreamFactory implements Run
 	}
 
 	private void exceptionStop(Exception e) {
-		logger.error(ServiceConstant.FORMAT_JOB_NAME(job.getName()) + e.getMessage(), e);
+		logger.error(StreamerConstant.FORMAT_JOB_NAME(job.getName()) + e.getMessage(), e);
 		context.getBean(LocalService.class).stopLocalNodeByName(job.getToken(), job.getName());
 		logger.info("The kafka consumer will be shutdown...");
 		if (consumer != null) {
 			consumer.shutdown();
 		}
-		throw new StreammerException(ServiceConstant.FORMAT_JOB_NAME(job.getName()) + e.getMessage(), e);
+		throw new StreammerException(StreamerConstant.FORMAT_JOB_NAME(job.getName()) + e.getMessage(), e);
 	}
 }

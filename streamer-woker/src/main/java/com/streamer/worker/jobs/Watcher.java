@@ -10,9 +10,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import com.streamer.service.context.AppService;
+import com.streamer.service.core.StreamerConstant;
 import com.streamer.service.core.StreamerEnvironment;
 import com.streamer.service.core.StreamerRole;
-import com.streamer.worker.constant.Constant;
 
 @Configuration
 @EnableScheduling
@@ -27,7 +27,7 @@ public class Watcher {
 	@Resource
 	private StreamerEnvironment streamerEnvironment;
 
-	@Scheduled(fixedRate = Constant.TIMEOUT * 1000)
+	@Scheduled(fixedRate = StreamerConstant.TIMEOUT * 1000)
 	public void online() {
 		String node = streamerEnvironment.getNode();
 		String host = streamerEnvironment.getHost();
