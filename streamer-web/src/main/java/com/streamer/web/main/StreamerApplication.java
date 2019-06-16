@@ -1,14 +1,19 @@
 package com.streamer.web.main;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
 import org.apache.commons.dbcp2.BasicDataSource;
+import org.springframework.beans.BeansException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.env.Environment;
@@ -21,14 +26,17 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
 import org.springframework.web.servlet.view.freemarker.FreeMarkerViewResolver;
 
+import com.streamer.service.context.AppService;
 import com.streamer.service.core.ServiceConstant;
+import com.streamer.service.core.StreamerRole;
 import com.streamer.web.aop.SessionInterceptor;
+import com.streamer.web.constant.WebConstant;
 
 import okhttp3.OkHttpClient;
 
 @SpringBootApplication
 @ComponentScan(basePackages = "com.streamer")
-public class StreamerApplication extends WebMvcConfigurerAdapter {
+public class StreamerApplication extends WebMvcConfigurerAdapter implements ApplicationContextAware {
 
 	@Resource
 	private Environment environment;
@@ -79,8 +87,19 @@ public class StreamerApplication extends WebMvcConfigurerAdapter {
 	@Bean
 	public OkHttpClient http() {
 		OkHttpClient client = new OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS)
-				.readTimeout(30, TimeUnit.SECONDS).callTimeout(30, TimeUnit.SECONDS).build();
+				.writeTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).callTimeout(30, TimeUnit.SECONDS)
+				.build();
 		return client;
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext context) throws BeansException {
+		AppService appService = context.getBean(AppService.class);
+		Map<String, Object> map = appService.findMasterNode(WebConstant.TIMEOUT);
+		while (map == null) {
+			appService.online("master", "127.0.0.1", Integer.valueOf(environment.getProperty("server.port")),
+					StreamerRole.MASTER, new Date());
+		}
 	}
 
 	@Bean
