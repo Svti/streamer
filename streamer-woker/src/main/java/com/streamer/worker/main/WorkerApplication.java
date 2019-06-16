@@ -65,7 +65,6 @@ public class WorkerApplication implements EmbeddedServletContainerCustomizer, Ap
 		Map<String, Object> map = appService.findMasterNode(Constant.TIMEOUT);
 
 		do {
-			// 更新所有任务标记
 			map = appService.findMasterNode(Constant.TIMEOUT);
 			if (map == null) {
 				try {
