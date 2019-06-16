@@ -10,10 +10,10 @@ import org.slf4j.LoggerFactory;
 
 import com.streamer.core.parser.CreateSideParser;
 import com.streamer.core.parser.SqlTree;
-import com.streamer.core.side.JdbcSide;
-import com.streamer.core.side.SideType;
 import com.streamer.core.utils.CoreUtils;
+import com.streamer.fun.side.JdbcSide;
 import com.streamer.fun.side.SideTableFactory;
+import com.streamer.fun.side.SideType;
 
 public class SideFunctionLoader {
 

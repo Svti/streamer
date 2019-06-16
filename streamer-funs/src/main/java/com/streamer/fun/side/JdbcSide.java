@@ -1,4 +1,4 @@
-package com.streamer.core.side;
+package com.streamer.fun.side;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

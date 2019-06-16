@@ -1,4 +1,4 @@
-package com.streamer.core.side;
+package com.streamer.fun.side;
 
 public abstract class SideFactory {
 

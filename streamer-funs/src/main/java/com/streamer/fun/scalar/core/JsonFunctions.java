@@ -14,8 +14,16 @@ public class JsonFunctions implements ScalarFunction {
 		Configuration conf = Configuration.builder().mappingProvider(new JacksonMappingProvider())
 				.jsonProvider(new JacksonJsonNodeJsonProvider()).build().addOptions(Option.SUPPRESS_EXCEPTIONS);
 		JsonNode node = JsonPath.using(conf).parse(json).read(path);
+
 		if (node != null) {
-			return node.asText();
+			if (node.isArray()) {
+				return node.toString();
+			} else if (node.isObject()) {
+				return node.toString();
+			} else {
+				return node.asText();
+			}
+
 		} else {
 			return null;
 		}

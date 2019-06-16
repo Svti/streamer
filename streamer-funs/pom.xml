@@ -17,6 +17,12 @@
 		</dependency>
 		
 		<dependency>
+			<groupId>com.streamer</groupId>
+			<artifactId>streamer-spi</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		
+		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
 		</dependency>

@@ -31,7 +31,6 @@ public class SideTableFactory implements ScalarFunction, ImplementableFunction {
 	private Method method;
 
 	public SideTableFactory() {
-
 	}
 
 	public SideTableFactory(Method method, CallImplementor implementor) {
@@ -90,7 +89,6 @@ public class SideTableFactory implements ScalarFunction, ImplementableFunction {
 				ConstantExpression cExpression = Expressions.constant(config, String.class);
 				logger.info("Expression fun:{}", fun);
 				try {
-
 					NewExpression target = Expressions.new_(
 							method.getDeclaringClass().getConstructor(new Class[] { String.class, String.class }),
 							fExpression, cExpression);
