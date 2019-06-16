@@ -180,14 +180,8 @@ public class JdbcSide extends SideFactory {
 					int wpsize = rpstmt.getParameterMetaData().getParameterCount();
 
 					if (params.length >= wpsize) {
-
 						for (int i = 0; i < wpsize; i++) {
 							wpstmt.setObject(i + 1, params[i]);
-						}
-
-						// 不是自动提交的，设置提交
-						if (connection.getAutoCommit() == false) {
-							connection.commit();
 						}
 						wpstmt.executeUpdate();
 						wpstmt.close();

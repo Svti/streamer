@@ -21,6 +21,11 @@ public class ConsoleSink extends BaseSink {
 	}
 
 	@Override
+	public void checkConfig() {
+
+	}
+
+	@Override
 	public void process(List<List<Row>> list) throws Exception {
 
 		if (list.isEmpty()) {
