@@ -15,6 +15,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
@@ -36,6 +37,15 @@ public class StreamerApplication extends WebMvcConfigurerAdapter {
 	public void addViewControllers(ViewControllerRegistry registry) {
 		registry.addViewController("/").setViewName("forward:/web/login");
 		super.addViewControllers(registry);
+	}
+
+	@Override
+	public void addResourceHandlers(ResourceHandlerRegistry registry) {
+		registry.addResourceHandler("/css/**").addResourceLocations("classpath:/templates/css/");
+		registry.addResourceHandler("/js/**").addResourceLocations("classpath:/templates/js/");
+		registry.addResourceHandler("/vendor/**").addResourceLocations("classpath:/templates/vendor/");
+		registry.addResourceHandler("/scss/**").addResourceLocations("classpath:/templates/scss/");
+		super.addResourceHandlers(registry);
 	}
 
 	@Override
