@@ -96,10 +96,11 @@ public class StreamerApplication extends WebMvcConfigurerAdapter implements Appl
 	public void setApplicationContext(ApplicationContext context) throws BeansException {
 		AppService appService = context.getBean(AppService.class);
 		Map<String, Object> map = appService.findMasterNode(WebConstant.TIMEOUT);
-		while (map == null) {
+		do {
 			appService.online(WebConstant.MASTER_NAME, WebConstant.MASTER_HOST,
 					Integer.valueOf(environment.getProperty("server.port")), StreamerRole.MASTER, new Date());
-		}
+			map = appService.findMasterNode(WebConstant.TIMEOUT);
+		} while (map == null);
 	}
 
 	@Bean
