@@ -24,10 +24,10 @@ import org.springframework.core.env.Environment;
 
 import com.mysql.jdbc.StringUtils;
 import com.streamer.core.exception.StreammerException;
+import com.streamer.service.context.AppService;
 import com.streamer.service.core.StreamerEnvironment;
 import com.streamer.service.core.StreamerRole;
 import com.streamer.worker.constant.Constant;
-import com.streamer.worker.service.AppService;
 import com.streamer.worker.utils.WebUtils;
 
 @SpringBootApplication
