@@ -23,4 +23,6 @@ public class WebConstant {
 	public static final String MASTER_HOST = "127.0.0.1";
 
 	public static final String MASTER_NAME = "master";
+
+	public static final int RUNNING = 1;
 }

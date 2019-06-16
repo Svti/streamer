@@ -64,21 +64,21 @@ public class WorkerApplication implements EmbeddedServletContainerCustomizer, Ap
 		// 判断是否有主节点
 		Map<String, Object> map = appService.findMasterNode(Constant.TIMEOUT);
 
-		while (map == null) {
-
-			appService.online(node, host, port, StreamerRole.SLAVE, new Date());
+		do {
 			// 更新所有任务标记
-			context.getBean(AppService.class).stopAll(node);
-
 			map = appService.findMasterNode(Constant.TIMEOUT);
-
-			try {
-				logger.error("The are not found master in this cluster , please check it and config it. After "
-						+ Constant.TIMEOUT + " seconds and try...");
-				Thread.sleep(Constant.TIMEOUT * 1000);
-			} catch (InterruptedException e) {
+			if (map == null) {
+				try {
+					logger.error("The are not found master in this cluster , please check it and config it. After "
+							+ Constant.TIMEOUT + " seconds and try...");
+					Thread.sleep(Constant.TIMEOUT * 1000);
+				} catch (InterruptedException e) {
+				}
+			} else {
+				appService.online(node, host, port, StreamerRole.SLAVE, new Date());
 			}
-		}
+		} while (map == null);
+
 	}
 
 	@Bean(name = "streamerEnvironment")
