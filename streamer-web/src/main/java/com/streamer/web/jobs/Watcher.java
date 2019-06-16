@@ -14,7 +14,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import com.streamer.service.context.AppService;
-import com.streamer.service.core.StreamerEnvironment;
 import com.streamer.service.core.StreamerRole;
 import com.streamer.web.constant.WebConstant;
 
@@ -29,9 +28,6 @@ public class Watcher {
 
 	@Resource
 	private Environment environment;
-
-	@Resource
-	private StreamerEnvironment streamerEnvironment;
 
 	@Scheduled(fixedRate = WebConstant.TIMEOUT * 1000)
 	public void online() {
