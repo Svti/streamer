@@ -19,4 +19,8 @@ public class WebConstant {
 	public static final int TIMEOUT = 3;
 
 	public static final long LOG_LINE = 100;
+
+	public static final String MASTER_HOST = "127.0.0.1";
+
+	public static final String MASTER_NAME = "master";
 }

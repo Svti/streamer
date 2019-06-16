@@ -97,8 +97,8 @@ public class StreamerApplication extends WebMvcConfigurerAdapter implements Appl
 		AppService appService = context.getBean(AppService.class);
 		Map<String, Object> map = appService.findMasterNode(WebConstant.TIMEOUT);
 		while (map == null) {
-			appService.online("master", "127.0.0.1", Integer.valueOf(environment.getProperty("server.port")),
-					StreamerRole.MASTER, new Date());
+			appService.online(WebConstant.MASTER_NAME, WebConstant.MASTER_HOST,
+					Integer.valueOf(environment.getProperty("server.port")), StreamerRole.MASTER, new Date());
 		}
 	}
 
