@@ -6,12 +6,11 @@
 	
 	通过Calcite实现了Kafka和JDBC数据源的JOIN，可以很方便的把Kafka中的数据，当作一张无边界的表来使用。
 	
-	![首页](https://raw.githubusercontent.com/Svti/streamer/master/docs/img/index.png)
+![首页](https://raw.githubusercontent.com/Svti/streamer/master/docs/img/index.png)
 	
-	![任务](https://raw.githubusercontent.com/Svti/streamer/master/docs/img/list.png)
+![任务](https://raw.githubusercontent.com/Svti/streamer/master/docs/img/list.png)
 	
-	![详细](https://raw.githubusercontent.com/Svti/streamer/master/docs/img/job.png)
-
+![详细](https://raw.githubusercontent.com/Svti/streamer/master/docs/img/job.png)
 
 	
 ## 特性
