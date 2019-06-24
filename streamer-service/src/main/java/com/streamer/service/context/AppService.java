@@ -9,38 +9,39 @@ import com.streamer.service.view.PaginationResult;
 
 public interface AppService {
 
-	public int save(String node, String name, String sql, Date now);
+    public int save(String node, String name, String sql, Date now);
 
-	public int update(String node, String name, String sql);
+    public int update(String node, String name, String sql);
 
-	public int start(String node, String name, String token);
+    public int start(String node, String name, String token);
 
-	public int stop(String token, String node, String name);
+    public int stop(String token, String node, String name);
 
-	public int stopAll(String node);
+    public int stopAll(String node);
 
-	public boolean exsit(String name);
+    public boolean exsit(String name);
 
-	public List<Map<String, Object>> findJobByName(String name);
+    public List<Map<String, Object>> findJobByName(String name);
 
-	public PaginationResult<Map<String, Object>> findAll(String name, String node, String sql, int current, int szie);
+    public PaginationResult<Map<String, Object>> findAll(String name, String node, String sql, int status, int current,
+            int szie);
 
-	public Map<String, Object> findTotal(int second);
+    public Map<String, Object> findTotal(int second);
 
-	public int del(String name);
+    public int del(String name);
 
-	public int online(String node, String host, int port, StreamerRole streamerRole, Date date);
+    public int online(String node, String host, int port, StreamerRole streamerRole, Date date);
 
-	public List<Map<String, Object>> findAlivableNode(int second);
+    public List<Map<String, Object>> findAlivableNode(int second);
 
-	public List<String> expireNodes(int timeout);
+    public List<String> expireNodes(int timeout);
 
-	public Map<String, Object> findMasterNode(int second);
+    public Map<String, Object> findMasterNode(int second);
 
-	public Map<String, Object> findNodesByName(String node);
+    public Map<String, Object> findNodesByName(String node);
 
-	public List<Map<String, Object>> findJobsByNode(String node, int status);
+    public List<Map<String, Object>> findJobsByNode(String node, int status);
 
-	public boolean login(String username, String password);
+    public boolean login(String username, String password);
 
 }

@@ -28,363 +28,323 @@ import com.streamer.web.rpc.RpcService;
 @RequestMapping("/job")
 public class StreamJobCrontroller {
 
-	private Logger logger = LoggerFactory.getLogger(getClass());
+    private Logger logger = LoggerFactory.getLogger(getClass());
 
-	@Resource
-	private AppService appService;
+    @Resource
+    private AppService appService;
 
-	@Resource
-	private RpcService rpcService;
+    @Resource
+    private RpcService rpcService;
 
-	@RequestMapping("/index")
-	public String index(HttpServletRequest request) {
-		// 分页
-		int currentPage = 1;
-		if (StringUtils.isNotEmpty(request.getParameter("pageNo"))) {
-			currentPage = Integer.parseInt(request.getParameter("pageNo"));
-		}
-		String name = request.getParameter("name");
-		if (StringUtils.isEmpty(name)) {
-			name = null;
-		} else {
-			request.setAttribute("name", name);
-		}
+    @RequestMapping("/index")
+    public String index(HttpServletRequest request) {
+        // 分页
+        int currentPage = 1;
+        if (StringUtils.isNotEmpty(request.getParameter("pageNo"))) {
+            currentPage = Integer.parseInt(request.getParameter("pageNo"));
+        }
 
-		String node = request.getParameter("node");
-		if (StringUtils.isEmpty(node)) {
-			node = null;
-		} else {
-			request.setAttribute("node", node);
-		}
+        String name = request.getParameter("search_name");
 
-		String sql = request.getParameter("sql");
-		if (StringUtils.isEmpty(sql)) {
-			sql = null;
-		} else {
-			request.setAttribute("sql", sql);
-		}
+        if (StringUtils.isEmpty(name)) {
+            name = null;
+        } else {
+            request.setAttribute("search_name", name);
+        }
 
-		PaginationView<Map<String, Object>> pv = new PaginationView<Map<String, Object>>(StreamerConstant.PAGE_SIZE,
-				currentPage);
-		pv.setPaginationResult(appService.findAll(name, node, sql, currentPage, StreamerConstant.PAGE_SIZE));
-		request.setAttribute(StreamerConstant.PAGEVIEW, pv);
-		return "job/index";
-	}
+        String node = request.getParameter("search_node");
+        if (StringUtils.isEmpty(node)) {
+            node = null;
+        } else {
+            request.setAttribute("search_node", node);
+        }
 
-	@RequestMapping("/add")
-	public String job_add(HttpServletRequest request) {
-		request.setAttribute("nodes", appService.findAlivableNode(StreamerConstant.TIMEOUT));
-		return "job/add";
-	}
+        String state = request.getParameter("search_state");
+        if (StringUtils.isEmpty(state)) {
+            state = "-1";
+        }
+        request.setAttribute("search_state", Integer.valueOf(state));
 
-	@RequestMapping("/edit/{name}")
-	public String job_edit(HttpServletRequest request, @PathVariable String name) {
-		List<Map<String, Object>> list = appService.findJobByName(name);
+        String sql = request.getParameter("search_sql");
+        if (StringUtils.isEmpty(sql)) {
+            sql = null;
+        } else {
+            request.setAttribute("search_sql", sql);
+        }
 
-		// 放入可用节点
-		request.setAttribute("nodes", appService.findAlivableNode(StreamerConstant.TIMEOUT));
+        PaginationView<Map<String, Object>> pv = new PaginationView<Map<String, Object>>(StreamerConstant.PAGE_SIZE,
+                currentPage);
+        pv.setPaginationResult(
+                appService.findAll(name, node, sql, Integer.valueOf(state), currentPage, StreamerConstant.PAGE_SIZE));
+        request.setAttribute(StreamerConstant.PAGEVIEW, pv);
+        return "job/index";
+    }
 
-		if (list.isEmpty()) {
-			return "job/add";
-		} else {
-			request.setAttribute("job", list.get(0));
-			return "job/add";
-		}
-	}
+    @RequestMapping("/add")
+    public String job_add(HttpServletRequest request) {
+        request.setAttribute("nodes", appService.findAlivableNode(StreamerConstant.TIMEOUT));
+        return "job/add";
+    }
 
-	@RequestMapping("/view/{name}")
-	public String job_view(HttpServletRequest request, @PathVariable String name) {
-		List<Map<String, Object>> list = appService.findJobByName(name);
+    @RequestMapping("/edit/{name}")
+    public String job_edit(HttpServletRequest request, @PathVariable String name) {
+        List<Map<String, Object>> list = appService.findJobByName(name);
 
-		// 放入可用节点
-		request.setAttribute("nodes", appService.findAlivableNode(StreamerConstant.TIMEOUT));
+        // 放入可用节点
+        request.setAttribute("nodes", appService.findAlivableNode(StreamerConstant.TIMEOUT));
 
-		if (list.isEmpty()) {
-			return "job/add";
-		} else {
-			request.setAttribute("job", list.get(0));
-			request.setAttribute("readonly", "readonly");
-			return "job/add";
-		}
-	}
+        if (list.isEmpty()) {
+            return "job/add";
+        } else {
+            request.setAttribute("job", list.get(0));
+            return "job/add";
+        }
+    }
 
-	@RequestMapping("/del/{name}")
-	public String job_del(HttpServletRequest request, @PathVariable String name) {
-		List<Map<String, Object>> list = appService.findJobByName(name);
-		if (list.isEmpty()) {
-			return "redirect:/job/index";
-		} else {
+    @RequestMapping("/view/{name}")
+    public String job_view(HttpServletRequest request, @PathVariable String name) {
+        List<Map<String, Object>> list = appService.findJobByName(name);
 
-			Map<String, Object> map = list.get(0);
-			int status = Integer.valueOf(map.get("status").toString());
-			if (status > 0) {
-				request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
-				request.setAttribute(StreamerConstant.MESSAGE, "任务" + name + "正在运行中，不能删除。");
+        // 放入可用节点
+        request.setAttribute("nodes", appService.findAlivableNode(StreamerConstant.TIMEOUT));
 
-				int currentPage = 1;
-				if (StringUtils.isNotEmpty(request.getParameter("pageNo"))) {
-					currentPage = Integer.parseInt(request.getParameter("pageNo"));
-				}
-				PaginationView<Map<String, Object>> pv = new PaginationView<Map<String, Object>>(
-						StreamerConstant.PAGE_SIZE, currentPage);
-				pv.setPaginationResult(appService.findAll(null, null, null, currentPage, StreamerConstant.PAGE_SIZE));
-				request.setAttribute(StreamerConstant.PAGEVIEW, pv);
+        if (list.isEmpty()) {
+            return "job/add";
+        } else {
+            request.setAttribute("job", list.get(0));
+            request.setAttribute("readonly", "readonly");
+            return "job/add";
+        }
+    }
 
-				return "job/index";
-			} else {
-				appService.del(name);
-				return "redirect:/job/index";
-			}
-		}
-	}
+    @RequestMapping("/del/{name}")
+    public String job_del(HttpServletRequest request, @PathVariable String name) {
+        List<Map<String, Object>> list = appService.findJobByName(name);
+        if (list.isEmpty()) {
+            return "redirect:/job/index";
+        } else {
 
-	@RequestMapping("/save")
-	public String job_save(HttpServletRequest request) {
+            Map<String, Object> map = list.get(0);
+            int status = Integer.valueOf(map.get("status").toString());
+            if (status > 0) {
+                request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+                request.setAttribute(StreamerConstant.MESSAGE, "任务" + name + "正在运行中，不能删除。");
+                return index(request);
+            } else {
+                appService.del(name);
+                return "redirect:/job/index";
+            }
+        }
+    }
 
-		String queryName = request.getParameter("name");
-		String sql = request.getParameter("sql");
-		String node = request.getParameter("node");
+    @RequestMapping("/save")
+    public String job_save(HttpServletRequest request) {
 
-		if (com.mysql.jdbc.StringUtils.isEmptyOrWhitespaceOnly(queryName)) {
-			request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
-			request.setAttribute(StreamerConstant.MESSAGE, "任务名不能为空");
-			return "job/add";
-		}
+        String queryName = request.getParameter("name");
+        String sql = request.getParameter("sql");
+        String node = request.getParameter("node");
 
-		if (com.mysql.jdbc.StringUtils.isEmptyOrWhitespaceOnly(node)) {
-			request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
-			request.setAttribute(StreamerConstant.MESSAGE, "请选择执行节点");
-			job_edit(request, queryName);
-			return "job/add";
-		}
+        if (com.mysql.jdbc.StringUtils.isEmptyOrWhitespaceOnly(queryName)) {
+            request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+            request.setAttribute(StreamerConstant.MESSAGE, "任务名不能为空");
+            return "job/add";
+        }
 
-		Matcher matcher = Pattern.compile("^\\w+$").matcher(queryName);
+        if (com.mysql.jdbc.StringUtils.isEmptyOrWhitespaceOnly(node)) {
+            request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+            request.setAttribute(StreamerConstant.MESSAGE, "请选择执行节点");
+            job_edit(request, queryName);
+            return "job/add";
+        }
 
-		if (!matcher.matches()) {
-			request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
-			request.setAttribute(StreamerConstant.MESSAGE, "任务名只能为数字和字母");
-			job_edit(request, queryName);
-			return "job/add";
-		}
+        Matcher matcher = Pattern.compile("^\\w+$").matcher(queryName);
 
-		if (StringUtils.length(queryName) < 3) {
-			request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
-			request.setAttribute(StreamerConstant.MESSAGE, "任务名必须大于3个字符");
-			job_edit(request, queryName);
-			return "job/add";
-		}
+        if (!matcher.matches()) {
+            request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+            request.setAttribute(StreamerConstant.MESSAGE, "任务名只能为数字和字母");
+            job_edit(request, queryName);
+            return "job/add";
+        }
 
-		if (com.mysql.jdbc.StringUtils.isEmptyOrWhitespaceOnly(sql)) {
-			request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
-			request.setAttribute(StreamerConstant.MESSAGE, "配置SQL不能为空");
-			job_edit(request, queryName);
-			return "job/add";
-		}
+        if (StringUtils.length(queryName) < 3) {
+            request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+            request.setAttribute(StreamerConstant.MESSAGE, "任务名必须大于3个字符");
+            job_edit(request, queryName);
+            return "job/add";
+        }
 
-		boolean flag = appService.exsit(queryName);
+        if (com.mysql.jdbc.StringUtils.isEmptyOrWhitespaceOnly(sql)) {
+            request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+            request.setAttribute(StreamerConstant.MESSAGE, "配置SQL不能为空");
+            job_edit(request, queryName);
+            return "job/add";
+        }
 
-		if (flag) {
+        boolean flag = appService.exsit(queryName);
 
-			try {
-				SqlParser.parseSql(queryName, sql);
-				appService.update(node, queryName, sql);
-				request.setAttribute(StreamerConstant.STATUS, StreamerConstant.SUCCESS);
-				request.setAttribute(StreamerConstant.MESSAGE, "任务" + queryName + "修改成功");
+        if (flag) {
 
-				// 分页
-				int currentPage = 1;
-				if (StringUtils.isNotEmpty(request.getParameter("pageNo"))) {
-					currentPage = Integer.parseInt(request.getParameter("pageNo"));
-				}
-				PaginationView<Map<String, Object>> pv = new PaginationView<Map<String, Object>>(
-						StreamerConstant.PAGE_SIZE, currentPage);
-				pv.setPaginationResult(appService.findAll(null, null, null, currentPage, StreamerConstant.PAGE_SIZE));
-				request.setAttribute(StreamerConstant.PAGEVIEW, pv);
+            try {
+                SqlParser.parseSql(queryName, sql);
+                appService.update(node, queryName, sql);
+                request.setAttribute(StreamerConstant.STATUS, StreamerConstant.SUCCESS);
+                request.setAttribute(StreamerConstant.MESSAGE, "任务" + queryName + "修改成功");
 
-				return "job/index";
+                return index(request);
 
-			} catch (Exception e) {
-				logger.error(e.getMessage(), e);
-				request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
-				request.setAttribute(StreamerConstant.MESSAGE, ExceptionUtils.getFullStackTrace(e));
-				job_edit(request, queryName);
-				return "job/add";
-			}
+            } catch (Exception e) {
+                logger.error(e.getMessage(), e);
+                request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+                request.setAttribute(StreamerConstant.MESSAGE, ExceptionUtils.getFullStackTrace(e));
+                job_edit(request, queryName);
+                return "job/add";
+            }
 
-		} else {
-			try {
-				SqlParser.parseSql(queryName, sql);
-				appService.save(node, queryName, sql, DateTime.now().toDate());
-				request.setAttribute(StreamerConstant.STATUS, StreamerConstant.SUCCESS);
-				request.setAttribute(StreamerConstant.MESSAGE, "任务" + queryName + "保存成功");
+        } else {
+            try {
+                SqlParser.parseSql(queryName, sql);
+                appService.save(node, queryName, sql, DateTime.now().toDate());
+                request.setAttribute(StreamerConstant.STATUS, StreamerConstant.SUCCESS);
+                request.setAttribute(StreamerConstant.MESSAGE, "任务" + queryName + "保存成功");
 
-				// 分页
-				int currentPage = 1;
-				if (StringUtils.isNotEmpty(request.getParameter("pageNo"))) {
-					currentPage = Integer.parseInt(request.getParameter("pageNo"));
-				}
-				PaginationView<Map<String, Object>> pv = new PaginationView<Map<String, Object>>(
-						StreamerConstant.PAGE_SIZE, currentPage);
-				pv.setPaginationResult(appService.findAll(null, null, null, currentPage, StreamerConstant.PAGE_SIZE));
-				request.setAttribute(StreamerConstant.PAGEVIEW, pv);
-				return "job/index";
+                return index(request);
 
-			} catch (Exception e) {
-				request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
-				request.setAttribute(StreamerConstant.MESSAGE, ExceptionUtils.getFullStackTrace(e));
-				logger.error(e.getMessage(), e);
-				job_edit(request, queryName);
-				return "job/add";
-			}
-		}
-	}
+            } catch (Exception e) {
+                request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+                request.setAttribute(StreamerConstant.MESSAGE, ExceptionUtils.getFullStackTrace(e));
+                logger.error(e.getMessage(), e);
+                job_edit(request, queryName);
+                return "job/add";
+            }
+        }
+    }
 
-	@RequestMapping("/run/{node}/{name}")
-	public String job_run(HttpServletRequest request, @PathVariable String node, @PathVariable String name) {
+    @RequestMapping("/run/{node}/{name}")
+    public String job_run(HttpServletRequest request, @PathVariable String node, @PathVariable String name) {
 
-		List<Map<String, Object>> list = appService.findJobByName(name);
+        List<Map<String, Object>> list = appService.findJobByName(name);
 
-		if (list.isEmpty()) {
-			request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
-			request.setAttribute(StreamerConstant.MESSAGE, "任务" + name + "不存在");
-		} else {
+        if (list.isEmpty()) {
+            request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+            request.setAttribute(StreamerConstant.MESSAGE, "任务" + name + "不存在");
+        } else {
 
-			Map<String, Object> map = list.get(0);
+            Map<String, Object> map = list.get(0);
 
-			int status = Integer.valueOf(map.get("status").toString());
+            int status = Integer.valueOf(map.get("status").toString());
 
-			if (status > 0) {
-				request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
-				request.setAttribute(StreamerConstant.MESSAGE, "任务" + name + "正在运行中");
-			} else {
-				try {
-					String txt = String.valueOf(map.get("sql"));
-					// 校验一次
-					SqlParser.parseSql(name, txt);
+            if (status > 0) {
+                request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+                request.setAttribute(StreamerConstant.MESSAGE, "任务" + name + "正在运行中");
+            } else {
+                try {
+                    String txt = String.valueOf(map.get("sql"));
+                    // 校验一次
+                    SqlParser.parseSql(name, txt);
 
-					// 调用执行节点
-					boolean flag = rpcService.run(node, name);
+                    // 调用执行节点
+                    boolean flag = rpcService.run(node, name);
 
-					if (flag) {
-						request.setAttribute(StreamerConstant.STATUS, StreamerConstant.SUCCESS);
-						request.setAttribute(StreamerConstant.MESSAGE, "任务" + name + "启动成功");
-					} else {
-						request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
-						request.setAttribute(StreamerConstant.MESSAGE, "任务" + name + "启动失败");
-					}
+                    if (flag) {
+                        request.setAttribute(StreamerConstant.STATUS, StreamerConstant.SUCCESS);
+                        request.setAttribute(StreamerConstant.MESSAGE, "任务" + name + "启动成功");
+                    } else {
+                        request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+                        request.setAttribute(StreamerConstant.MESSAGE, "任务" + name + "启动失败");
+                    }
 
-				} catch (Exception e) {
-					logger.error(e.getMessage(), e);
-					request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
-					request.setAttribute(StreamerConstant.MESSAGE, ExceptionUtils.getFullStackTrace(e));
-				}
-			}
-		}
+                } catch (Exception e) {
+                    logger.error(e.getMessage(), e);
+                    request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+                    request.setAttribute(StreamerConstant.MESSAGE, ExceptionUtils.getFullStackTrace(e));
+                }
+            }
+        }
 
-		// 分页
-		int currentPage = 1;
-		if (StringUtils.isNotEmpty(request.getParameter("pageNo"))) {
-			currentPage = Integer.parseInt(request.getParameter("pageNo"));
-		}
-		PaginationView<Map<String, Object>> pv = new PaginationView<Map<String, Object>>(StreamerConstant.PAGE_SIZE,
-				currentPage);
-		pv.setPaginationResult(appService.findAll(null, null, null, currentPage, StreamerConstant.PAGE_SIZE));
-		request.setAttribute(StreamerConstant.PAGEVIEW, pv);
+        return index(request);
 
-		return "job/index";
-	}
+    }
 
-	@RequestMapping("/stop/{node}/{name}")
-	public String stop_job(HttpServletRequest request, @PathVariable String node, @PathVariable String name) {
+    @RequestMapping("/stop/{node}/{name}")
+    public String stop_job(HttpServletRequest request, @PathVariable String node, @PathVariable String name) {
 
-		List<Map<String, Object>> list = appService.findJobByName(name);
+        List<Map<String, Object>> list = appService.findJobByName(name);
 
-		if (list.isEmpty()) {
+        if (list.isEmpty()) {
 
-			request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
-			request.setAttribute(StreamerConstant.MESSAGE, "任务" + name + "不存在");
+            request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+            request.setAttribute(StreamerConstant.MESSAGE, "任务" + name + "不存在");
 
-		} else {
+        } else {
 
-			Map<String, Object> map = list.get(0);
-			int status = Integer.valueOf(map.get("status").toString());
+            Map<String, Object> map = list.get(0);
+            int status = Integer.valueOf(map.get("status").toString());
 
-			if (status > 0) {
+            if (status > 0) {
 
-				try {
-					// 调用执行节点
-					boolean flag = rpcService.stop(node, name);
+                try {
+                    // 调用执行节点
+                    boolean flag = rpcService.stop(node, name);
 
-					if (flag) {
-						request.setAttribute(StreamerConstant.STATUS, StreamerConstant.SUCCESS);
-						request.setAttribute(StreamerConstant.MESSAGE, "任务" + name + "停止成功");
-					} else {
-						request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
-						request.setAttribute(StreamerConstant.MESSAGE, "任务" + name + "停止失败");
-					}
+                    if (flag) {
+                        request.setAttribute(StreamerConstant.STATUS, StreamerConstant.SUCCESS);
+                        request.setAttribute(StreamerConstant.MESSAGE, "任务" + name + "停止成功");
+                    } else {
+                        request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+                        request.setAttribute(StreamerConstant.MESSAGE, "任务" + name + "停止失败");
+                    }
 
-				} catch (Exception e) {
-					logger.info(e.getMessage(), e);
-					request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
-					request.setAttribute(StreamerConstant.MESSAGE, ExceptionUtils.getFullStackTrace(e));
-				}
-			} else {
-				request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
-				request.setAttribute(StreamerConstant.MESSAGE, "任务" + name + "已经是停止状态");
-			}
+                } catch (Exception e) {
+                    logger.info(e.getMessage(), e);
+                    request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+                    request.setAttribute(StreamerConstant.MESSAGE, ExceptionUtils.getFullStackTrace(e));
+                }
+            } else {
+                request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+                request.setAttribute(StreamerConstant.MESSAGE, "任务" + name + "已经是停止状态");
+            }
 
-		}
+        }
+        return index(request);
+    }
 
-		// 分页
-		int currentPage = 1;
-		if (StringUtils.isNotEmpty(request.getParameter("pageNo"))) {
-			currentPage = Integer.parseInt(request.getParameter("pageNo"));
-		}
-		PaginationView<Map<String, Object>> pv = new PaginationView<Map<String, Object>>(StreamerConstant.PAGE_SIZE,
-				currentPage);
-		pv.setPaginationResult(appService.findAll(null, null, null, currentPage, StreamerConstant.PAGE_SIZE));
-		request.setAttribute(StreamerConstant.PAGEVIEW, pv);
+    @RequestMapping("/log/{node}/{name}")
+    public String job_log(HttpServletRequest request, @PathVariable String node, @PathVariable String name) {
 
-		return "job/index";
-	}
+        request.setAttribute("node", node);
+        request.setAttribute("job", name);
 
-	@RequestMapping("/log/{node}/{name}")
-	public String job_log(HttpServletRequest request, @PathVariable String node, @PathVariable String name) {
+        // 第N行
+        long line = 50;
+        if (StringUtils.isNotEmpty(request.getParameter("line"))) {
+            line = Long.parseLong(request.getParameter("line"));
+            if (line < 50) {
+                line = 50;
+            }
+        }
+        request.setAttribute("line", line);
 
-		request.setAttribute("node", node);
-		request.setAttribute("job", name);
-
-		// 第N行
-		long line = 50;
-		if (StringUtils.isNotEmpty(request.getParameter("line"))) {
-			line = Long.parseLong(request.getParameter("line"));
-			if (line < 50) {
-				line = 50;
-			}
-		}
-		request.setAttribute("line", line);
-
-		try {
-			if (name.equals("_")) {
-				String log = rpcService.log(node, "_", line);
-				request.setAttribute("log", log);
-			} else {
-				List<Map<String, Object>> list = appService.findJobByName(name);
-				if (list.isEmpty()) {
-					request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
-					request.setAttribute(StreamerConstant.MESSAGE, "任务" + name + "不存在");
-					request.setAttribute("log", "");
-				} else {
-					String log = rpcService.log(node, name, line);
-					request.setAttribute("log", log);
-				}
-			}
-		} catch (IOException e) {
-			request.setAttribute("log", "");
-			logger.info(e.getMessage(), e);
-			request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
-			request.setAttribute(StreamerConstant.MESSAGE, ExceptionUtils.getFullStackTrace(e));
-		}
-		return "job/log";
-	}
+        try {
+            if (name.equals("_")) {
+                String log = rpcService.log(node, "_", line);
+                request.setAttribute("log", log);
+            } else {
+                List<Map<String, Object>> list = appService.findJobByName(name);
+                if (list.isEmpty()) {
+                    request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+                    request.setAttribute(StreamerConstant.MESSAGE, "任务" + name + "不存在");
+                    request.setAttribute("log", "");
+                } else {
+                    String log = rpcService.log(node, name, line);
+                    request.setAttribute("log", log);
+                }
+            }
+        } catch (IOException e) {
+            request.setAttribute("log", "");
+            logger.info(e.getMessage(), e);
+            request.setAttribute(StreamerConstant.STATUS, StreamerConstant.ERROR);
+            request.setAttribute(StreamerConstant.MESSAGE, ExceptionUtils.getFullStackTrace(e));
+        }
+        return "job/log";
+    }
 }
