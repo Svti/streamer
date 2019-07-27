@@ -15,15 +15,15 @@ public class JdbcConnectionPool {
 	public static Connection getConnection(String driver, String url, String user, String password) {
 		String key = new String(DigestUtils.md5Hex(StringUtils.join(driver, url, user, password).getBytes()));
 		try {
+			Class.forName(driver);
 			if (connections.containsKey(key)) {
 				Connection connection = connections.get(key);
-				if (connection.isClosed()) {
-					Class.forName(driver);
+				if (connection == null || connection.isClosed()) {
 					connection = new DriverManagerConnectionFactory(url, user, password).createConnection();
+					connections.putIfAbsent(key, connection);
 				}
 				return connection;
 			} else {
-				Class.forName(driver);
 				Connection connection = new DriverManagerConnectionFactory(url, user, password).createConnection();
 				connections.putIfAbsent(key, connection);
 				return connection;

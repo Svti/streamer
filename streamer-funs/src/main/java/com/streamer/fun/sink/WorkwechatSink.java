@@ -45,11 +45,11 @@ public class WorkwechatSink extends BaseSink {
 		Map<String, SqlParserResult> map = sqlTree.getPreDealSinkMap();
 
 		if (map.isEmpty()) {
-			throw new RuntimeException("The QywxOutput config and cant be empty, config:" + map);
+			throw new RuntimeException("The WorkwechatSink config and cant be empty, config:" + map);
 		}
 
 		if (map.size() > 1) {
-			throw new RuntimeException("The QywxOutput config unsupport two sink table , config:" + map);
+			throw new RuntimeException("The WorkwechatSink config unsupport two sink table , config:" + map);
 		}
 
 		String sinkTable = new ArrayList<>(map.keySet()).get(0);

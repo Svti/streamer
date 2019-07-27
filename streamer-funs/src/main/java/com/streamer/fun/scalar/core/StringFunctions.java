@@ -6,7 +6,7 @@ import com.streamer.fun.scalar.ScalarFunction;
 
 public class StringFunctions implements ScalarFunction {
 
-	public static int LENGHT(String input) {
+	public static long LENGHT(String input) {
 		if (StringUtils.isEmpty(input) || StringUtils.isBlank(input)) {
 			return input.length();
 		} else {
@@ -14,7 +14,7 @@ public class StringFunctions implements ScalarFunction {
 		}
 	}
 
-	public static int LENGHT(String[] input) {
+	public static long LENGHT(String[] input) {
 		if (input != null) {
 			return input.length;
 		} else {
