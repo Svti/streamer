@@ -23,6 +23,7 @@ import com.streamer.core.support.Signal;
 import com.streamer.core.utils.CoreUtils;
 import com.streamer.fun.load.ScalarFunctionLoader;
 import com.streamer.fun.load.SideFunctionLoader;
+import com.streamer.fun.sink.BaseSink;
 import com.streamer.fun.sink.StreamerSinkFactory;
 import com.streamer.service.core.StreamerConstant;
 import com.streamer.service.job.KafkaStreamJob;
@@ -41,11 +42,24 @@ public class KafkaStreamBroker extends AbstractKafkaStreamFactory implements Run
 
 	private KafkaStreamJob job;
 
+	private BaseSink baseSink;
+
 	public KafkaStreamBroker(KafkaStreamJob job, ApplicationContext context) {
 		this.job = job;
 		this.context = context;
+
 		String sql = job.getSqlTree().getExecSql().getQuerySql().replaceAll("\n", " ");
 		logger.info("Streammer SQL Query: {}", sql);
+
+		// 输出结果
+		String type = job.getSqlTree().getPreDealSinkMap().get(job.getSqlTree().getExecSql().getTargetTable())
+				.getPropMap().get("type").toString();
+		String outputName = CoreUtils.upperCaseFirstChar(type.toLowerCase()) + "Sink";
+		try {
+			baseSink = StreamerSinkFactory.getSinkByClass(outputName, job.getSqlTree());
+		} catch (Exception e) {
+			exceptionStop(e);
+		}
 	}
 
 	@Override
@@ -85,13 +99,8 @@ public class KafkaStreamBroker extends AbstractKafkaStreamFactory implements Run
 			// 装载Kafka数据源
 			List<List<Row>> streams = queryKafkaStreams(stmt);
 
-			// 输出结果
-			String type = job.getSqlTree().getPreDealSinkMap().get(job.getSqlTree().getExecSql().getTargetTable())
-					.getPropMap().get("type").toString();
-
-			// 处理输出
-			String outputName = CoreUtils.upperCaseFirstChar(type.toLowerCase()) + "Sink";
-			StreamerSinkFactory.getSinkByClass(outputName, job.getSqlTree()).process(streams);
+			// 处理数据
+			baseSink.process(streams);
 
 			// 关闭stmt链接
 			stmt.close();
