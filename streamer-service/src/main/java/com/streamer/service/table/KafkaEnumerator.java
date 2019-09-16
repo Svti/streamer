@@ -37,6 +37,32 @@ public class KafkaEnumerator<T> implements Enumerator<Object[]> {
 		KafkaMessage message = messages.get(current);
 		List<Object> objs = new ArrayList<>();
 
+		Map<String, Object> map = new HashMap<>();
+		switch (spliter) {
+		case JSON:
+			Map<String, JsonNode> imap = new HashMap<>();
+			try {
+				DtStringUtil.flatJson(imap, "", message.getValue());
+			} catch (IOException e) {
+			}
+			for (Entry<String, JsonNode> entry : imap.entrySet()) {
+				map.put(entry.getKey(), entry.getValue().asText());
+			}
+			break;
+		case KV:
+			for (String vals : message.getValue().split(spliter.getKey())) {
+				String ff[] = vals.split(spliter.getValue());
+				if (ff.length > 1) {
+					map.put(ff[0], ff[1]);
+				} else {
+					continue;
+				}
+			}
+			break;
+		default:
+			break;
+		}
+
 		// 此处要保证和struct 的结构顺序一致
 		for (TableColumn column : columns) {
 
@@ -62,18 +88,7 @@ public class KafkaEnumerator<T> implements Enumerator<Object[]> {
 			default:
 				switch (spliter) {
 				case JSON:
-					objs.add(JsonFunctions.get_json_object(message.getValue(), "$." + column.getColumn()));
-					break;
 				case KV:
-					Map<String, Object> map = new HashMap<>();
-					for (String vals : message.getValue().split(spliter.getKey())) {
-						String ff[] = vals.split(spliter.getValue());
-						if (ff.length > 1) {
-							map.put(ff[0], ff[1]);
-						} else {
-							continue;
-						}
-					}
 					objs.add(map.containsKey(column.getColumn()) ? map.get(column.getColumn()) : null);
 					break;
 				default:
