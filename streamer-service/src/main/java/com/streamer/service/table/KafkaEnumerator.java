@@ -1,16 +1,22 @@
 package com.streamer.service.table;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.calcite.linq4j.Enumerator;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 import com.streamer.core.message.KafkaMessage;
 import com.streamer.core.parser.TableColumn;
 import com.streamer.core.support.Spliter;
+import com.streamer.core.utils.CoreUtils;
 import com.streamer.fun.scalar.core.JsonFunctions;
+
 
 public class KafkaEnumerator<T> implements Enumerator<Object[]> {
 
@@ -42,7 +48,7 @@ public class KafkaEnumerator<T> implements Enumerator<Object[]> {
 		case JSON:
 			Map<String, JsonNode> imap = new HashMap<>();
 			try {
-				DtStringUtil.flatJson(imap, "", message.getValue());
+				CoreUtils.flatJson(imap, "", message.getValue());
 			} catch (IOException e) {
 			}
 			for (Entry<String, JsonNode> entry : imap.entrySet()) {

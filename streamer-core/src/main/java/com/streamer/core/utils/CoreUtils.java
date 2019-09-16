@@ -6,16 +6,23 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.joda.time.format.DateTimeFormat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+
 import com.streamer.core.exception.StreammerException;
 import com.streamer.core.parser.CreateSideParser.SqlParserResult;
 import com.streamer.core.parser.TableColumn;
+
+import com.mysql.jdbc.StringUtils;
 
 public class CoreUtils {
 
@@ -210,6 +217,31 @@ public class CoreUtils {
 		}
 
 		return list;
+	}
+
+	public static void flatJson(Map<String, JsonNode> map, String parent, String message) throws IOException {
+		JsonNode root = MAPPER.readTree(message);
+		if (root.isObject()) {
+			Iterator<Entry<String, JsonNode>> fiterator = root.fields();
+			while (fiterator.hasNext()) {
+				Entry<String, JsonNode> entry = fiterator.next();
+				String key = entry.getKey().toLowerCase().trim();
+				if (StringUtils.isStrictlyNumeric(key)) {
+					continue;
+				}
+				JsonNode value = entry.getValue();
+				if (value.elements().hasNext()) {
+					flatJson(map, (StringUtils.isEmptyOrWhitespaceOnly(parent) ? key : parent + "." + key),
+							value.toString());
+				} else {
+					if (!StringUtils.isEmptyOrWhitespaceOnly(parent)) {
+						map.put(parent + "." + key, value);
+					} else {
+						map.put(key, value);
+					}
+				}
+			}
+		}
 	}
 
 }
