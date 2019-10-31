@@ -169,6 +169,7 @@ public class JdbcSide extends SideFactory {
 			String result = null;
 			if (rs.next()) {
 				result = String.valueOf(rs.getObject(1));
+				rs.close();
 				rpstmt.close();
 			} else {
 				String wsql = contextMap.get("write.sql") == null ? null : String.valueOf(contextMap.get("write.sql"));
@@ -178,14 +179,18 @@ public class JdbcSide extends SideFactory {
 
 					// 处理参数超长的问题
 					int wpsize = rpstmt.getParameterMetaData().getParameterCount();
+					rpstmt.close();
 
 					if (params.length >= wpsize) {
 						for (int i = 0; i < wpsize; i++) {
 							wpstmt.setObject(i + 1, params[i]);
 						}
 						wpstmt.executeUpdate();
-						wpstmt.close();
+					}else{
+						throw new RuntimeException("The jdbcSide table sql" + contextMap.get("write.sql") + " could not execute " );
+	
 					}
+					wpstmt.close();
 				}
 			}
 			return result;

@@ -90,6 +90,7 @@ public class JdbcSink extends BaseSink {
 		}
 
 		pstmt.executeBatch();
+		pstmt.close();
 		connection.commit();
 	}
 
