@@ -32,108 +32,112 @@ import com.streamer.service.table.KafkaMessageTable;;
 
 public class KafkaStreamBroker extends AbstractKafkaStreamFactory implements Runnable {
 
-	private Logger logger = LoggerFactory.getLogger(getClass());
+    private Logger logger = LoggerFactory.getLogger(getClass());
 
-	private CalciteConnection connection;
+    private CalciteConnection connection;
 
-	private SchemaPlus schemaPlus;
+    private SchemaPlus schemaPlus;
 
-	private ApplicationContext context;
+    private ApplicationContext context;
 
-	private KafkaStreamJob job;
+    private KafkaStreamJob job;
 
-	private BaseSink baseSink;
+    private BaseSink baseSink;
 
-	public KafkaStreamBroker(KafkaStreamJob job, ApplicationContext context) {
-		this.job = job;
-		this.context = context;
+    public KafkaStreamBroker(KafkaStreamJob job, ApplicationContext context) {
+        this.job = job;
+        this.context = context;
 
-		String sql = job.getSqlTree().getExecSql().getQuerySql().replaceAll("\n", " ");
-		logger.info("Streammer SQL Query: {}", sql);
+        String sql = job.getSqlTree().getExecSql().getQuerySql().replaceAll("\n", " ");
+        logger.info("Streammer SQL Query: {}", sql);
 
-		// 输出结果
-		String type = job.getSqlTree().getPreDealSinkMap().get(job.getSqlTree().getExecSql().getTargetTable())
-				.getPropMap().get("type").toString();
-		String outputName = CoreUtils.upperCaseFirstChar(type.toLowerCase()) + "Sink";
-		try {
-			baseSink = StreamerSinkFactory.getSinkByClass(outputName, job.getSqlTree());
-		} catch (Exception e) {
-			exceptionStop(e);
-		}
-	}
+        // 输出结果
+        String type = job.getSqlTree().getPreDealSinkMap().get(job.getSqlTree().getExecSql().getTargetTable())
+                .getPropMap().get("type").toString();
+        String outputName = CoreUtils.upperCaseFirstChar(type.toLowerCase()) + "Sink";
+        try {
+            baseSink = StreamerSinkFactory.getSinkByClass(outputName, job.getSqlTree());
+        } catch (Exception e) {
+            exceptionStop(e);
+        }
+    }
 
-	@Override
-	public void run() {
-		Properties info = new Properties();
-		info.setProperty("lex", "MYSQL");
-		try {
-			// 初始化连接
-			this.connection = DriverManager.getConnection("jdbc:calcite:", info).unwrap(CalciteConnection.class);
-			this.schemaPlus = connection.getRootSchema();
+    @Override
+    public void run() {
+        Properties info = new Properties();
+        info.setProperty("lex", "MYSQL");
+        try {
+            // 初始化连接
+            this.connection = DriverManager.getConnection("jdbc:calcite:", info).unwrap(CalciteConnection.class);
+            this.schemaPlus = connection.getRootSchema();
 
-			// 系统Function注册
-			ScalarFunctionLoader.load(schemaPlus);
+            // 系统Function注册
+            ScalarFunctionLoader.load(schemaPlus);
 
-			// 维度Funtion注册
-			SideFunctionLoader.load(job.getSqlTree(), schemaPlus);
+            // 维度Funtion注册
+            SideFunctionLoader.load(job.getSqlTree(), schemaPlus);
 
-			// 启动信号量
-			Signal.map.putIfAbsent(job.getToken(), new AtomicLong(1));
+            // 启动信号量
+            Signal.map.putIfAbsent(job.getToken(), new AtomicLong(1));
 
-			// 启动多线程
-			start(job.getToken(), job.getZookeeper(), job.getTopics(), job.getGroup(), job.getReset(), job.getBatch());
-		} catch (Exception e) {
-			exceptionStop(e);
-		}
-	}
+            // 启动多线程
+            start(job.getToken(), job.getZookeeper(), job.getTopics(), job.getGroup(), job.getReset(), job.getBatch());
+        } catch (Exception e) {
+            exceptionStop(e);
+        }
+    }
 
-	@Override
-	public void onReceive(List<KafkaMessage> messages) {
-		try {
-			// 只支持消费一个表的数据
-			schemaPlus.add(job.getKtable(), new KafkaMessageTable(messages, job.getSpliter(), job.getColumns()));
+    @Override
+    public void onReceive(List<KafkaMessage> messages) {
+        try {
+            // 只支持消费一个表的数据
+            schemaPlus.add(job.getKtable(), new KafkaMessageTable(messages, job.getSpliter(), job.getColumns()));
 
-			// 创建连接
-			Statement stmt = connection.createStatement();
+            // 创建连接
+            Statement stmt = connection.createStatement();
 
-			// 装载Kafka数据源
-			List<List<Row>> streams = queryKafkaStreams(stmt);
+            // 装载Kafka数据源
+            List<List<Row>> streams = queryKafkaStreams(stmt);
 
-			// 处理数据
-			baseSink.process(streams);
+            // 处理数据
+            boolean contunue = baseSink.process(streams);
 
-			// 关闭stmt链接
-			stmt.close();
+            // 关闭stmt链接
+            stmt.close();
 
-			commit(job.getToken());
-		} catch (Exception e) {
-			exceptionStop(e);
-		}
-	}
+            if (contunue) {
+                commit(job.getToken());
+            } else {
+                exceptionStop(new RuntimeException("Could not continue consume , may be exception happend"));
+            }
+        } catch (Exception e) {
+            exceptionStop(e);
+        }
+    }
 
-	private List<List<Row>> queryKafkaStreams(Statement stmt) throws Exception {
-		List<List<Row>> list = new ArrayList<>();
-		ResultSet rs = stmt.executeQuery(job.getSqlTree().getExecSql().getQuerySql());
-		while (rs.next()) {
-			int cnt = rs.getMetaData().getColumnCount();
-			List<Row> rows = new ArrayList<>();
-			for (int i = 1; i <= cnt; i++) {
-				Row row = new Row(rs.getMetaData().getColumnLabel(i), CoreUtils
-						.dataTypeToObj(SqlTypeName.valueOf(rs.getMetaData().getColumnTypeName(i)), rs.getObject(i)));
-				rows.add(row);
-			}
-			list.add(rows);
-		}
-		return list;
-	}
+    private List<List<Row>> queryKafkaStreams(Statement stmt) throws Exception {
+        List<List<Row>> list = new ArrayList<>();
+        ResultSet rs = stmt.executeQuery(job.getSqlTree().getExecSql().getQuerySql());
+        while (rs.next()) {
+            int cnt = rs.getMetaData().getColumnCount();
+            List<Row> rows = new ArrayList<>();
+            for (int i = 1; i <= cnt; i++) {
+                Row row = new Row(rs.getMetaData().getColumnLabel(i), CoreUtils
+                        .dataTypeToObj(SqlTypeName.valueOf(rs.getMetaData().getColumnTypeName(i)), rs.getObject(i)));
+                rows.add(row);
+            }
+            list.add(rows);
+        }
+        return list;
+    }
 
-	private void exceptionStop(Exception e) {
-		logger.error(StreamerConstant.FORMAT_JOB_NAME(job.getName()) + e.getMessage(), e);
-		context.getBean(LocalService.class).stopLocalNodeByName(job.getToken(), job.getName());
-		logger.info("The kafka consumer will be shutdown...");
-		if (consumer != null) {
-			consumer.shutdown();
-		}
-		throw new StreammerException(StreamerConstant.FORMAT_JOB_NAME(job.getName()) + e.getMessage(), e);
-	}
+    private void exceptionStop(Exception e) {
+        logger.error(StreamerConstant.FORMAT_JOB_NAME(job.getName()) + e.getMessage(), e);
+        context.getBean(LocalService.class).stopLocalNodeByName(job.getToken(), job.getName());
+        logger.info("The kafka consumer will be shutdown...");
+        if (consumer != null) {
+            consumer.shutdown();
+        }
+        throw new StreammerException(StreamerConstant.FORMAT_JOB_NAME(job.getName()) + e.getMessage(), e);
+    }
 }

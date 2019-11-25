@@ -12,44 +12,46 @@ import com.streamer.spi.console.PrettyTable;
 
 public class ConsoleSink extends BaseSink {
 
-	private Logger logger = LoggerFactory.getLogger(getClass());
+    private Logger logger = LoggerFactory.getLogger(getClass());
 
-	private String job;
+    private String job;
 
-	public ConsoleSink(SqlTree sqlTree) {
-		job = sqlTree.getPreDealTableMap().values().iterator().next().getQueryName();
-	}
+    public ConsoleSink(SqlTree sqlTree) {
+        job = sqlTree.getPreDealTableMap().values().iterator().next().getQueryName();
+    }
 
-	@Override
-	public void checkConfig() {
+    @Override
+    public void checkConfig() {
 
-	}
+    }
 
-	@Override
-	public void process(List<List<Row>> list) throws Exception {
+    @Override
+    public boolean process(List<List<Row>> list) throws Exception {
 
-		if (list.isEmpty()) {
-			logger.warn("There are not found any result for job:{} in ConsoleSink", job);
-			return;
-		}
+        if (list.isEmpty()) {
+            logger.warn("There are not found any result for job:{} in ConsoleSink", job);
+            return true;
+        }
 
-		List<String> headers = new ArrayList<>();
-		for (Row row : list.get(0)) {
-			headers.add(row.getKey());
-		}
+        List<String> headers = new ArrayList<>();
+        for (Row row : list.get(0)) {
+            headers.add(row.getKey());
+        }
 
-		PrettyTable table = PrettyTable.fieldNames(headers.toArray(new String[headers.size()]));
-		for (List<Row> rows : list) {
-			List<Object> values = new ArrayList<>();
-			for (Row row : rows) {
-				values.add(row.getValue());
-			}
-			table.addRow(values.toArray());
-		}
+        PrettyTable table = PrettyTable.fieldNames(headers.toArray(new String[headers.size()]));
+        for (List<Row> rows : list) {
+            List<Object> values = new ArrayList<>();
+            for (Row row : rows) {
+                values.add(row.getValue());
+            }
+            table.addRow(values.toArray());
+        }
 
-		logger.info("Job:{} for ConsoleSink print", job);
+        logger.info("Job:{} for ConsoleSink print", job);
 
-		logger.info(table.toString());
-	}
+        logger.info(table.toString());
+
+        return true;
+    }
 
 }
