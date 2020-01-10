@@ -54,4 +54,9 @@ public class ConsoleSink extends BaseSink {
         return true;
     }
 
+    @Override
+    public void destory() {
+
+    }
+
 }

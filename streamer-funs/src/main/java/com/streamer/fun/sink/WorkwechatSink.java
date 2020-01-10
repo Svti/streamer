@@ -160,4 +160,8 @@ public class WorkwechatSink extends BaseSink {
         return true;
     }
 
+    @Override
+    public void destory() {
+    }
+
 }

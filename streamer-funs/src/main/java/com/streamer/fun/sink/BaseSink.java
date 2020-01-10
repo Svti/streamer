@@ -10,4 +10,5 @@ public abstract class BaseSink {
 
     public abstract boolean process(List<List<Row>> list) throws Exception;
 
+    public abstract void destory();
 }

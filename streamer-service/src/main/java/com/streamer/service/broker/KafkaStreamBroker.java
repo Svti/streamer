@@ -108,7 +108,10 @@ public class KafkaStreamBroker extends AbstractKafkaStreamFactory implements Run
             if (contunue) {
                 commit(job.getToken());
             } else {
+                // 停止上游
                 exceptionStop(new RuntimeException("Could not continue consume , may be exception happend"));
+                // 销毁下游资源
+                baseSink.destory();
             }
         } catch (Exception e) {
             exceptionStop(e);

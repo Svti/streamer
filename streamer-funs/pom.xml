@@ -8,6 +8,12 @@
 	</parent>
 	<artifactId>streamer-funs</artifactId>
 
+	<properties>
+		<aliyun-log-producer.version>0.3.0</aliyun-log-producer.version>
+		<aliyun-log.version>0.6.33</aliyun-log.version>
+		<protobuf-java.version>3.5.1</protobuf-java.version>
+	</properties>
+
 	<dependencies>
 
 		<dependency>
@@ -51,6 +57,30 @@
 			<groupId>com.squareup.okhttp3</groupId>
 			<artifactId>okhttp</artifactId>
 			<version>3.14.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.aliyun.openservices</groupId>
+			<artifactId>aliyun-log-producer</artifactId>
+			<version>${aliyun-log-producer.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.google.protobuf</groupId>
+					<artifactId>protobuf-java</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>com.aliyun.openservices</groupId>
+			<artifactId>aliyun-log</artifactId>
+			<version>${aliyun-log.version}</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>protobuf-java</artifactId>
+					<groupId>com.google.protobuf</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 	</dependencies>

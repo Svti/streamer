@@ -117,4 +117,9 @@ public class JdbcSink extends BaseSink {
         return flag;
     }
 
+    @Override
+    public void destory() {
+
+    }
+
 }
