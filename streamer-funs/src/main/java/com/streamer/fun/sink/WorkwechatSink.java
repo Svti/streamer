@@ -1,5 +1,6 @@
 package com.streamer.fun.sink;
 
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -94,69 +95,89 @@ public class WorkwechatSink extends BaseSink {
     @Override
     public boolean process(List<List<Row>> list) throws Exception {
 
+        if (list.isEmpty()) {
+            logger.warn("There are not found any result row: {}", list);
+            return true;
+        }
+
         String corpid = String.valueOf(contextMap.get("corpid"));
         String agentid = String.valueOf(contextMap.get("agentid"));
         String secret = String.valueOf(contextMap.get("secret"));
         String touser = String.valueOf(contextMap.get("touser"));
 
-        // 微信api地址
-        String token_url = "https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=" + corpid + "&corpsecret=" + secret;
-        Response token_resp = client.newCall(new Request.Builder().url(token_url).build()).execute();
+        try {
 
-        if (!token_resp.isSuccessful()) {
-            logger.error("Could not send WorkWechat message for config corpid:{}, agentid:{}, secret:{}", corpid,
-                    agentid, secret);
-            return false;
-        }
+            String token_url = "https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=" + corpid + "&corpsecret="
+                    + secret;
+            Response token_resp = client.newCall(new Request.Builder().url(token_url).build()).execute();
 
-        JsonNode node = MAPPER.readTree(token_resp.body().string());
-
-        if (!node.has("access_token")) {
-            logger.error("Could not send WorkWechat message for config corpid:{}, agentid:{}, secret:{}", corpid,
-                    agentid, secret);
-            return false;
-        }
-
-        String token = node.get("access_token").asText();
-
-        token_resp.close();
-
-        String send_url = "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=" + token;
-
-        for (List<Row> rows : list) {
-
-            Map<String, Object> map = new HashMap<>();
-            map.put("touser", touser);
-            map.put("agentid", agentid);
-            map.put("msgtype", "markdown");
-
-            Map<String, Object> markdown = new HashMap<>();
-
-            StringBuffer buf = new StringBuffer("");
-            for (Row row : rows) {
-                buf.append(row.getValue());
-                buf.append("\n");
-            }
-            markdown.put("content", buf.toString());
-            map.put("markdown", markdown);
-            map.put("safe", 0);
-
-            String json = MAPPER.writeValueAsString(map);
-            RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"), json);
-            Response send_resp = client.newCall(new Request.Builder().url(send_url).post(body).build()).execute();
-
-            if (!send_resp.isSuccessful()) {
-                logger.error("Could not send WorkWechat message for config corpid:{}, agentid:{}, secret:{}", corpid,
-                        agentid, secret);
-            } else {
-                logger.info("WorkWechat message send success , resp:{}", send_resp.body().string());
+            if (!token_resp.isSuccessful()) {
+                logger.error("Could not send Qywx message for config corpid:{}, agentid:{}, secret:{}", corpid, agentid,
+                        secret);
+                return false;
             }
 
-            send_resp.close();
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.configure(Feature.ALLOW_UNQUOTED_CONTROL_CHARS, true);
 
+            JsonNode node = mapper.readTree(token_resp.body().string());
+
+            if (!node.has("access_token")) {
+                logger.error("Could not send Qywx message for config corpid:{}, agentid:{}, secret:{}", corpid, agentid,
+                        secret);
+                return false;
+            }
+
+            String token = node.get("access_token").asText();
+
+            token_resp.close();
+
+            String send_url = "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=" + token;
+
+            for (List<Row> rows : list) {
+
+                Map<String, Object> map = new HashMap<>();
+                map.put("touser", touser);
+                map.put("agentid", agentid);
+                map.put("msgtype", "markdown");
+
+                Map<String, Object> markdown = new HashMap<>();
+
+                StringBuffer buf = new StringBuffer("");
+                for (Row row : rows) {
+                    buf.append(row.getValue());
+                    buf.append("\n");
+                }
+                markdown.put("content", buf.toString());
+                map.put("markdown", markdown);
+                map.put("safe", 0);
+
+                String json = mapper.writeValueAsString(map);
+                RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"), json);
+                Response send_resp = client.newCall(new Request.Builder().url(send_url).post(body).build()).execute();
+
+                boolean flag = send_resp.isSuccessful();
+
+                String resp = send_resp.body().string();
+
+                if (flag == false) {
+                    logger.error("Could not send Qywx message for config corpid:{}, agentid:{}, secret:{}", corpid,
+                            agentid, secret);
+                } else {
+                    logger.info("Qywx message send success , resp:{}", resp);
+                }
+
+                send_resp.close();
+            }
+
+        } catch (SocketTimeoutException e) {
+            logger.warn(e.getMessage(), e);
+            // 初始化连接
+            client = new OkHttpClient.Builder().connectTimeout(TIMEOUT, TimeUnit.MINUTES)
+                    .callTimeout(TIMEOUT, TimeUnit.MINUTES).readTimeout(TIMEOUT, TimeUnit.MINUTES)
+                    .writeTimeout(TIMEOUT, TimeUnit.MINUTES).build();
         }
 
-        // 不再逐条判断，直接继续，不能发出去的，需要检查配置人员。
         return true;
     }
 
