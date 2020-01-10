@@ -58,7 +58,7 @@ public class KafkaStreamBroker extends AbstractKafkaStreamFactory implements Run
         try {
             baseSink = StreamerSinkFactory.getSinkByClass(outputName, job.getSqlTree());
         } catch (Exception e) {
-            exceptionStop(e);
+            exceptionStop(baseSink, e);
         }
     }
 
@@ -83,7 +83,7 @@ public class KafkaStreamBroker extends AbstractKafkaStreamFactory implements Run
             // 启动多线程
             start(job.getToken(), job.getZookeeper(), job.getTopics(), job.getGroup(), job.getReset(), job.getBatch());
         } catch (Exception e) {
-            exceptionStop(e);
+            exceptionStop(baseSink, e);
         }
     }
 
@@ -109,12 +109,10 @@ public class KafkaStreamBroker extends AbstractKafkaStreamFactory implements Run
                 commit(job.getToken());
             } else {
                 // 停止上游
-                exceptionStop(new RuntimeException("Could not continue consume , may be exception happend"));
-                // 销毁下游资源
-                baseSink.destory();
+                exceptionStop(baseSink, new RuntimeException("Could not continue consume , may be exception happend"));
             }
         } catch (Exception e) {
-            exceptionStop(e);
+            exceptionStop(baseSink, e);
         }
     }
 
@@ -134,12 +132,15 @@ public class KafkaStreamBroker extends AbstractKafkaStreamFactory implements Run
         return list;
     }
 
-    private void exceptionStop(Exception e) {
+    private void exceptionStop(BaseSink sink, Exception e) {
         logger.error(StreamerConstant.FORMAT_JOB_NAME(job.getName()) + e.getMessage(), e);
         context.getBean(LocalService.class).stopLocalNodeByName(job.getToken(), job.getName());
         logger.info("The kafka consumer will be shutdown...");
         if (consumer != null) {
             consumer.shutdown();
+        }
+        if (sink != null) {
+            sink.destory();
         }
         throw new StreammerException(StreamerConstant.FORMAT_JOB_NAME(job.getName()) + e.getMessage(), e);
     }
